@@ -102,7 +102,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 #Login and log out redirects
-LOGIN_REDIRECT_URL = '/home/'
+LOGIN_REDIRECT_URL = '/dashboard/'
 LOGIN_URL = '/login/'
 
 # Internationalization
