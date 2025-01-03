@@ -2,7 +2,15 @@
 
 {% block content %}
 <div>
-    <h1>This is User Dashboard</h1>
+    <h1>This is {{user.username}} Dashboard</h1>
+    <div>
+        {% for team in teams %}
+        <p>{{ team.team.name }}</p>
+        {% if team.isCoach %}
+        <p>Team Coach</p>
+        {% endif %}
+        {% endfor %}
+    </div>
     
 </div>
 

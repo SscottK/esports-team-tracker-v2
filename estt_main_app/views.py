@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from .forms import CustomUserCreationForm
 from django.urls import reverse_lazy
-
+from .models import Team_user
+from django.contrib.auth.models import User
 # Create your views here.
 
 #View for the home page
@@ -12,8 +13,11 @@ def home(request):
 
 #view for the User Dashboard Page
 def userDashboard(request):
+    teams = Team_user.objects.filter(user=request.user)
     
-    return render(request, 'users/dashboard.html')
+    return render(request, 'users/dashboard.html', {
+        'teams': teams
+    })
 
 #logout
 def logOut(request):
