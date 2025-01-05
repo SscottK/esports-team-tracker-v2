@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load static %} 
+{% block content %}
+<h2>Add Memebr to Team</h2>
+  {% if error_message %}
+    <p style="color: red;">{{ error_message }}</p>
+  {% endif %}
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Add User</button>
+  </form>
+
+{% endblock %}

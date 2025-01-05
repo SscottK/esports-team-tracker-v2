@@ -4,6 +4,9 @@ from .forms import CustomUserCreationForm
 from django.urls import reverse_lazy
 from .models import Team_user, Team, Team_game
 from django.contrib.auth.models import User
+from django.views.generic.edit import CreateView
+from .forms import TeamUserForm
+from django.http import HttpResponse
 # Create your views here.
 
 #View for the home page
@@ -37,8 +40,8 @@ def signup(request):
             user = form.save(commit=False)            
             user.save()
             # Log the user in
-            # login(request, user)
-            return redirect('home')  # Redirect to a welcome page or dashboard
+            login(request, user)
+            return redirect('dashboard')  # Redirect to a welcome page or dashboard
         else:
             error_message = 'Invalid sign up - try again'
     else:
@@ -59,4 +62,26 @@ def team_detail(request, teamID):
         'members': members,
         'games': games,
         'team':team
+    })
+#add member to team
+def add_team_member(request, teamID):
+    team_user = Team_user.objects.filter(team=teamID, user=request.user)
+    team = get_object_or_404(Team, id=teamID)
+
+    # if not team_user.isCoach:
+    #     raise HttpResponse('You are not allowed to do that')
+    
+    if request.method == 'POST':
+        form = TeamUserForm(request.POST)
+        if form.is_valid():
+            team_user = form.save(commit=False)
+            team_user.team = team
+            team_user.save()
+            return redirect(f'/team-details/{teamID}')
+    else:
+        form = TeamUserForm()
+    
+    return render(request, 'team/add_team_user.html', {
+        'form': form,
+        'team': team,
     })

@@ -8,8 +8,11 @@
 
 <div class="team-detail-container"> 
     <div class="team-detail-headers">
-    <h1>Team Details</h1>    
-    <h3>Name:<span>&nbsp;{{ team.name }}</span></h3>
+    <h1>Team Details</h1>
+    <div class="add-member-container">    
+        <h3>Name:<span>&nbsp;{{ team.name }}</span></h3>
+        <a href="/team/{{team.id}}/add-member">Add Member</a>
+    </div> 
     </div>
     <div class="members-games-container">
     <div class="games-container"> 
@@ -17,12 +20,12 @@
         <ul>
             {% for game in games %}
                 <li>
-                    {{ game.game}}
+                    {{ game.game }}
                 </li>
             {% endfor %}
         </ul>
     </div>
-    <div class="coaches-containers">
+    <div class="coaches-container">
         <h2>Team Coaches</h2>
         <ul>
             {% for member in members %}
@@ -34,7 +37,9 @@
             {% endfor %}
         </ul>
     </div>
-    <div class="members-containers">
+    
+    <div class="members-container">
+               
         <h2>Team Members</h2>
         <ul>
             {% for member in members %}
