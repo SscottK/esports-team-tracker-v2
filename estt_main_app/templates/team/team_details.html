@@ -11,12 +11,14 @@
     <h1>Team Details</h1>
     <div class="add-member-container">    
         <h3>Name:<span>&nbsp;{{ team.name }}</span></h3>
-        <a href="/team/{{team.id}}/add-member">Add Member</a>
+        {% if team_user.isCoach %}
+            <a href="/team/{{team.id}}/add-member">Add Member</a>
+        {% endif %}
     </div> 
     </div>
     <div class="members-games-container">
     <div class="games-container"> 
-        <h2>Games</h2>
+        <h2>Games</h2> <a href="">Add Game</a>
         <ul>
             {% for game in games %}
                 <li>

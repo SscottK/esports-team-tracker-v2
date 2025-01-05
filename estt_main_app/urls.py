@@ -11,5 +11,8 @@ urlpatterns = [
     path('dashboard/', views.userDashboard, name='dashboard'),
     path('logout/', LogoutView.as_view(next_page='/'), name='logout'),
     path('team-details/<int:teamID>', views.team_detail, name='team-details'),
-    path('team/<int:teamID>/add-member/', views.add_team_member, name='add-member')
+    path('team/<int:teamID>/add-member/', views.add_team_member, name='add-member'),
+    path('edit-profile/<int:user_id>/', views.edit_profile, name='edit-profile'),
+    path('new-team/', views.create_team, name='new-team'),
+    
     ]

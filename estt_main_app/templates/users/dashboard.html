@@ -1,18 +1,41 @@
 {% extends "base.html" %}
 
+
+{% load static %}
+{% block head%}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}" />    
+{% endblock %}
+
+
 {% block content %}
 <div>
     <h1>This is {{user.username}} Dashboard</h1>
-    <div>
-        {% for team in teams %}
-        <p>{{ team.team.name }}</p>
-        <a href="{% url 'team-details' teamID=team.team.id %}">Team Details</a>
-        {% if team.isCoach %}
-        <p>Team Coach</p>
-        {% endif %}
-        {% endfor %}
+    <h3>My Teams</h3>
+    {% for team in teams %}
+    <div class="dashboard-teams-container">
+        
+        
+        <div class="team-name">
+            <p>{{ team.team.name }}</p>
+        </div>
+        
+        <div class="team-coach">
+            <p>Team Coach - 
+                {% if team.isCoach %}
+                    Yes
+                {% else %}
+                    No
+                {% endif %}
+            </p>
+        
+        
+        </div>
+        <div class="team-details-link">
+            <a href="{% url 'team-details' teamID=team.team.id %}">Team Details</a>
+        </div>
+        
     </div>
-    
+    {% endfor %}
 </div>
 
 {% endblock %}

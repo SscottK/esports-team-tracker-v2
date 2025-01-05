@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'css/team_detail.css' %}" />
-    <title>Document</title>
+    <title>Esports Team Tracker</title>
     {% block head%}
     {% endblock %}
 </head>
@@ -23,6 +23,8 @@
             {% csrf_token %}
           </form>
           <a href="{% url 'dashboard' %}">Dashboard</a>
+          <a href="{% url 'edit-profile' user_id=user.id%}">Edit Profile</a>
+          <a href="{% url 'new-team' %}">New Team</a>
         {% endif %}
     </nav>
     {% block content %}

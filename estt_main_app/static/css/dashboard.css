@@ -1,0 +1,16 @@
+.dashboard-teams-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    /* justify-content: space-evenly;
+    justify-items: flex-start; */
+    max-width: 40%;
+    border: 5px solid yellow;
+}
+
+.team-coach, .team-name, .team-details-link {
+    display: flex;
+    padding: 0 5px;
+    
+    
+}
