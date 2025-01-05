@@ -6,6 +6,7 @@
     <div>
         {% for team in teams %}
         <p>{{ team.team.name }}</p>
+        <a href="{% url 'team-details' teamID=team.team.id %}">Team Details</a>
         {% if team.isCoach %}
         <p>Team Coach</p>
         {% endif %}

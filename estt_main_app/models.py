@@ -80,3 +80,16 @@ class Target_times(models.Model):
     def __str__(self):
         rtrn_strng = "Target Times for " + self.team.name + ", " + self.level.level_name
         return rtrn_strng
+    
+
+#team game for each game a team plays
+class Team_game(models.Model):
+    #the team the record is being created for
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    #the game the team plays
+    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+
+    #what it will return when being printed
+    def __str__(self):
+        rtrn_strng = self.game.game + ", " + self.team.name
+        return rtrn_strng

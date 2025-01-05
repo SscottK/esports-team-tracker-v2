@@ -1,8 +1,8 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from .forms import CustomUserCreationForm
 from django.urls import reverse_lazy
-from .models import Team_user
+from .models import Team_user, Team, Team_game
 from django.contrib.auth.models import User
 # Create your views here.
 
@@ -48,3 +48,15 @@ def signup(request):
     # Render the signup page with form and potential error message
     context = {'form': form, 'error_message': error_message}
     return render(request, 'signup.html', context)
+
+#Team details page
+def team_detail(request, teamID):
+    team = get_object_or_404(Team, id=teamID)    
+    members = Team_user.objects.filter(team=teamID)
+    games = Team_game.objects.filter(team=teamID)
+
+    return render(request, 'team/team_details.html', {
+        'members': members,
+        'games': games,
+        'team':team
+    })

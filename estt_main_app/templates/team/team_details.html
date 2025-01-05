@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load static %}
+{% block head%}    
+{% endblock %}
+
+{% block content %}
+
+<div class="team-detail-container"> 
+    <div class="team-detail-headers">
+    <h1>Team Details</h1>    
+    <h3>Name:<span>&nbsp;{{ team.name }}</span></h3>
+    </div>
+    <div class="members-games-container">
+    <div class="games-container"> 
+        <h2>Games</h2>
+        <ul>
+            {% for game in games %}
+                <li>
+                    {{ game.game}}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="coaches-containers">
+        <h2>Team Coaches</h2>
+        <ul>
+            {% for member in members %}
+                {% if  member.isCoach %}
+                    <li>
+                        {{ member.user}}
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="members-containers">
+        <h2>Team Members</h2>
+        <ul>
+            {% for member in members %}
+                {% if not member.isCoach %}
+                    <li>
+                        {{ member.user}}
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+</div>
+{% endblock %}

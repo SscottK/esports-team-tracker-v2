@@ -1,0 +1,17 @@
+.team-detail-container {
+    display: flex;
+    flex-direction: column;
+    
+
+}
+
+.members-games-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+.games-container, .coaches-container, .members-container {
+    display: flex;
+    flex-direction: column;
+}
