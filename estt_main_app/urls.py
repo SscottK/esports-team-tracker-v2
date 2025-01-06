@@ -14,5 +14,7 @@ urlpatterns = [
     path('team/<int:teamID>/add-member/', views.add_team_member, name='add-member'),
     path('edit-profile/<int:user_id>/', views.edit_profile, name='edit-profile'),
     path('new-team/', views.create_team, name='new-team'),
-    
+    path('api/games/', views.get_games, name='get_games'),
+    path('api/table-data/', views.get_table_data, name='get_table_data'),
+    path('add-game/<int:team_id>/', views.create_team_game, name='team-game')
     ]

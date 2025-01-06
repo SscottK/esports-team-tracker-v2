@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Team_user, Team
+from .models import Team_user, Team, Team_game
 
 
 
@@ -35,3 +35,9 @@ class AddTeamUserOnTeamCreationForm(forms.ModelForm):
     class Meta:
         model = Team_user
         exclude = ['user', 'team', 'isCoach']
+
+        
+class TeamGameForm(forms.ModelForm):
+    class Meta:
+        model = Team_game
+        fields = ['game']

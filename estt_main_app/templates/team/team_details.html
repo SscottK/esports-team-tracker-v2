@@ -1,58 +1,183 @@
 {% extends "base.html" %}
 {% load static %}
 {% block head%}
-    <link rel="stylesheet" href="{% static 'css/team_detail.css' %}" />    
+    <link rel="stylesheet" href="{% static 'css/team_detail.css' %}" />
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>    
 {% endblock %}
 
 {% block content %}
 
-<div class="team-detail-container"> 
+<div class="team-detail-container" x-data="gameSelection()" x-init=loadGames({{team.id}})> 
     <div class="team-detail-headers">
-    <h1>Team Details</h1>
-    <div class="add-member-container">    
-        <h3>Name:<span>&nbsp;{{ team.name }}</span></h3>
-        {% if team_user.isCoach %}
-            <a href="/team/{{team.id}}/add-member">Add Member</a>
-        {% endif %}
-    </div> 
+        <h1>Team Details</h1>
+        <div class="add-member-container">    
+            <h3>Name:<span>&nbsp;{{ team.name }}</span></h3>
+            {% if team_user.isCoach %}
+                <a href="/team/{{team.id}}/add-member">Add Member</a>
+            {% endif %}
+        </div> 
     </div>
-    <div class="members-games-container">
-    <div class="games-container"> 
-        <h2>Games</h2> <a href="">Add Game</a>
-        <ul>
-            {% for game in games %}
-                <li>
-                    {{ game.game }}
-                </li>
-            {% endfor %}
-        </ul>
-    </div>
-    <div class="coaches-container">
-        <h2>Team Coaches</h2>
-        <ul>
-            {% for member in members %}
-                {% if  member.isCoach %}
-                    <li>
-                        {{ member.user}}
-                    </li>
-                {% endif %}
-            {% endfor %}
-        </ul>
-    </div>
+    <div class="members-games-container">        
+        <div class="games-container">
+            <div class="add-game">
+                <h2>Games</h2> <a href="/add-game/{{team.id}}/">Add Game</a>
+            </div>
+            <div >
+                <!-- Error Display -->
+                <!-- <div x-show="errorMessage" class="error-message" style="color: red;" x-text="errorMessage"></div> -->
+                <ul>
+                    <template x-for="game in games" :key="game.game_id">
+                      <li style="list-style-type: none;">
+                        <button @click="loadTable(game.game_id)" class="game-link" x-text="game.game__game"></button>
+                      </li>
+                    </template>
+                </ul>
+            </div>
+        
+        </div>
+        <div class="coaches-container">
+            <h2>Team Coaches</h2>
+            <ul>
+                {% for member in members %}
+                    {% if  member.isCoach %}
+                        <li style="list-style-type: none;">
+                            {{ member.user}}
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
     
-    <div class="members-container">
+        <div class="members-container">
                
-        <h2>Team Members</h2>
-        <ul>
-            {% for member in members %}
-                {% if not member.isCoach %}
-                    <li>
-                        {{ member.user}}
-                    </li>
-                {% endif %}
-            {% endfor %}
-        </ul>
+            <h2>Team Members</h2>
+            <ul>
+                {% for member in members %}
+                    {% if not member.isCoach %}
+                        <li style="list-style-type: none;">
+                            {{ member.user}}
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
     </div>
+
+
+    <div class="game-table-container">
+
+      
+        <!-- Table Display -->
+        <!-- <div x-show="tableData.levels.length > 0" style="display: none;">
+          <table>
+            <thead>
+              <tr>
+                <th>Level</th>
+                <template x-for="user in tableData.users" :key="user.user">
+                  <th x-text="user.user__username"></th>
+                </template>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="level in tableData.levels" :key="level.id">
+                <tr>
+                  <td x-text="level.level_name"></td>
+                  <template x-for="user in tableData.users" :key="user.user">
+                    <td x-text="getTime(level.id, user.user)"></td>
+                  </template>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>    -->
+<!-- Table Data -->
+    
+    <template x-if="tableData">
+      <div x-show="tableData.levels.length > 0" style="display: none;">
+          <h2>Game Details</h2>
+          <table border="1">
+            <thead>
+              <tr>
+                <th>Level</th>
+                <template x-for="user in tableData.users" :key="user.user">
+                  <th x-text="user.user__username"></th>
+                </template>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="level in tableData.levels" :key="level.id">
+                <tr>
+                  <td x-text="level.level_name"></td>
+                  <template x-for="user in tableData.users" :key="user.user">
+                    <td x-text="getTime(level.id, user.user)"></td>
+                  </template>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>      
+    </template>
+    <template x-if="tableData.length">
+      <div border="'1">
+        <p>No Table Data</p>
+      </div>
+    </template>
+    
+  </div>
 </div>
-</div>
+
+<script>
+    function gameSelection() {
+      return {
+        games: [],
+        tableData: { users: [], levels: [], times: {} },
+        errorMessage: '',
+  
+        async loadGames(teamId) {
+          if (!teamId) {
+            this.errorMessage = "Team ID is missing.";
+            return;
+          }
+          try {
+            const response = await fetch(`/api/games/?team_id=${teamId}`);
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.error || "Failed to fetch games.");
+            }
+            this.games = await response.json();
+            console.log(this.games)
+            
+            this.errorMessage = '';
+          } catch (error) {
+            this.errorMessage = error.message;
+          }
+        },
+  
+        async loadTable(gameId) {
+          if (!gameId) {
+            this.errorMessage = "Please select a game.";
+            return;
+          }
+          try {
+            const response = await fetch(`/api/table-data/?game_id=${gameId}`);
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.error || "Failed to fetch table data.");
+            }
+            this.tableData = await response.json();
+            
+            this.errorMessage = '';
+          } catch (error) {
+            this.errorMessage = error.message;
+          }
+        },
+  
+        getTime(levelId, userId) {
+          return this.tableData.times[`${levelId}-${userId}`] || '-';
+        }
+      };
+    }
+  </script>
 {% endblock %}

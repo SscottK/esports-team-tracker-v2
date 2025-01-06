@@ -35,3 +35,10 @@
     padding: 0 25px 0;
 
 }
+
+.add-game {
+    display: flex;
+    flex-direction: row;
+}
+
+

@@ -2,11 +2,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from .forms import CustomUserCreationForm
 from django.urls import reverse_lazy
-from .models import Team_user, Team, Team_game
+from .models import Team_user, Team, Team_game, Game, Level, Time
 from django.contrib.auth.models import User
 from django.views.generic.edit import CreateView, UpdateView
-from .forms import TeamUserForm, EditProfileForm, NewTeamForm, AddTeamUserOnTeamCreationForm
+from .forms import TeamUserForm, EditProfileForm, NewTeamForm, AddTeamUserOnTeamCreationForm, TeamGameForm
 from django.http import HttpResponse
+from django.http import JsonResponse
 
 # Create your views here.
 
@@ -60,15 +61,17 @@ def team_detail(request, teamID):
     members = Team_user.objects.filter(team=teamID)
     games = Team_game.objects.filter(team=teamID)
     team_user = get_object_or_404(Team_user, team=teamID,user=request.user)
+    teams = Team.objects.all()
+    
 
-
-    print(f'{team_user.isCoach}')
+    
 
     return render(request, 'team/team_details.html', {
         'members': members,
         'games': games,
         'team': team,
         'team_user': team_user,
+        'teams': teams
     })
 #add member to team
 def add_team_member(request, teamID):
@@ -141,3 +144,68 @@ def create_team(request):
         
     })
             
+#get games by team
+def get_games(request):
+    try:
+        team_id = request.GET.get('team_id')
+        
+        if not team_id:
+            return JsonResponse({"error": "Team is required"}, status=400)
+        
+        games = Team_game.objects.filter(team_id=team_id).values('game_id', 'game__game')
+        
+          
+        if not games:
+            return JsonResponse({"error": "No games found for thid team"}, status=404)
+        
+        return JsonResponse(list(games), safe=False)
+    except Exception as e:
+        return JsonResponse({"error": f"An unexpected error occured: {str(e)}"}, status=500)
+    
+#gather table data
+def get_table_data(request):
+    try:
+        game_id = request.GET.get('game_id')
+        if not game_id:
+            return JsonResponse({"error": "Game is required"}, status=400)
+        try:
+            team_game = Team_game.objects.get(game=game_id)
+            game = get_object_or_404(Game, id=game_id)
+        except Game.DoesNotExist:
+            return JsonResponse({"error": "Game not found"}, status=404)
+
+        team_members = Team_user.objects.filter(team=team_game.team).values('user', 'user__username')
+        levels = Level.objects.filter(game=game).values('id', 'level_name')
+        times = Time.objects.filter(level__game=game).values('level_id', 'user_id', 'time')
+
+        time_dict = {f"{time['level_id']}-{time['user_id']}": time['time'] for time in times}
+        
+        return JsonResponse({
+            'users': list(team_members.filter(isCoach=False)),
+            'levels': list(levels),
+            'times': time_dict,
+        })
+    except Exception as e:
+        return JsonResponse({"error": f"An unexpected error occurred: {str(e)}"}, status=500)
+    
+
+
+#add game to team
+def create_team_game(request, team_id):
+    team = get_object_or_404(Team, id=team_id)
+    
+    if request.method == 'POST':
+        form = TeamGameForm(request.POST)
+        if form.is_valid():
+            new_team_game = form.save(commit=False)
+            new_team_game.team = team
+            new_team_game.save()
+        return redirect(f'/team-details/{team_id}')
+    else:
+        form = TeamGameForm()
+
+
+    return render(request, 'team/add_team_game.html', {
+        'team': team,
+        'form': form        
+    })    
