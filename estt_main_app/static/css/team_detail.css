@@ -42,3 +42,6 @@
 }
 
 
+.game-table-container, .game-table {
+    justify-items: center;
+}

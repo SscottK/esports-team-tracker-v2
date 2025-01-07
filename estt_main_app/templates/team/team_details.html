@@ -65,37 +65,13 @@
 
 
     <div class="game-table-container">
-
       
-        <!-- Table Display -->
-        <!-- <div x-show="tableData.levels.length > 0" style="display: none;">
-          <table>
-            <thead>
-              <tr>
-                <th>Level</th>
-                <template x-for="user in tableData.users" :key="user.user">
-                  <th x-text="user.user__username"></th>
-                </template>
-              </tr>
-            </thead>
-            <tbody>
-              <template x-for="level in tableData.levels" :key="level.id">
-                <tr>
-                  <td x-text="level.level_name"></td>
-                  <template x-for="user in tableData.users" :key="user.user">
-                    <td x-text="getTime(level.id, user.user)"></td>
-                  </template>
-                </tr>
-              </template>
-            </tbody>
-          </table>
-        </div>
-      </div>    -->
-<!-- Table Data -->
+       
     
     <template x-if="tableData">
-      <div x-show="tableData.levels.length > 0" style="display: none;">
-          <h2>Game Details</h2>
+      
+      <div x-show="tableData.levels.length > 0" style="display: none;" class="game-table">
+        <h2 x-text="tableData.game"></h2> 
           <table border="1">
             <thead>
               <tr>
@@ -119,9 +95,11 @@
         </div>
       </div>      
     </template>
-    <template x-if="tableData.length">
-      <div border="'1">
-        <p>No Table Data</p>
+    <template x-if="!tableData.levels.length">
+      <div>
+          
+          <p>No table Data for this game - Please select another game</p>
+          
       </div>
     </template>
     
@@ -129,10 +107,11 @@
 </div>
 
 <script>
-    function gameSelection() {
+  function gameSelection() {
       return {
         games: [],
-        tableData: { users: [], levels: [], times: {} },
+        tableData: { users: [], levels: [], times: {}},
+        
         errorMessage: '',
   
         async loadGames(teamId) {
@@ -147,7 +126,7 @@
               throw new Error(errorData.error || "Failed to fetch games.");
             }
             this.games = await response.json();
-            console.log(this.games)
+            
             
             this.errorMessage = '';
           } catch (error) {
@@ -167,7 +146,7 @@
               throw new Error(errorData.error || "Failed to fetch table data.");
             }
             this.tableData = await response.json();
-            
+            this.tableData.game = `Tracked Data for ${this.tableData.game}`
             this.errorMessage = '';
           } catch (error) {
             this.errorMessage = error.message;

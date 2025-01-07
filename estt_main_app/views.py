@@ -179,11 +179,12 @@ def get_table_data(request):
         times = Time.objects.filter(level__game=game).values('level_id', 'user_id', 'time')
 
         time_dict = {f"{time['level_id']}-{time['user_id']}": time['time'] for time in times}
-        
+        # game = Game.objects.filter(id=game_id).values('game')
         return JsonResponse({
             'users': list(team_members.filter(isCoach=False)),
             'levels': list(levels),
             'times': time_dict,
+            'game': str(game),
         })
     except Exception as e:
         return JsonResponse({"error": f"An unexpected error occurred: {str(e)}"}, status=500)
