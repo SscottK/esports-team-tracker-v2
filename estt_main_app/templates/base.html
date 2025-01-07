@@ -6,28 +6,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'css/team_detail.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/base.css' %}" />
     <title>Esports Team Tracker</title>
     {% block head%}
     {% endblock %}
 </head>
 <body>
+  <div class="nav-container">
     <nav>
         {% if not user.is_authenticated %}
         <a href="{% url 'home' %}">Home</a>
-        {% else %}       
+        {% else %}
+        <div class="nav-links">
+        <div class="dashboard-link">       
           <a href="{% url 'dashboard' %}">Dashboard</a>
+        </div>
+        <div class="user-action-links">
           <a href="{% url 'edit-profile' user_id=user.id%}">Edit Profile</a>
+        
           <a href="{% url 'new-team' %}">New Team</a>
+        
           <a href="{% url 'add-time' %}">New Time</a>
-          
+        
           <a href="{% url 'logout' %}" onclick="document.getElementById('logout-form').submit(); return false;">
             Log Out
           </a>
+        </div>
         <form id="logout-form" method="post" action="{% url 'logout' %}" style="display: none;">
             {% csrf_token %}
           </form>
+        </div>
         {% endif %}
     </nav>
+  
+  </div>
     {% block content %}
     {% endblock %}
 </body>

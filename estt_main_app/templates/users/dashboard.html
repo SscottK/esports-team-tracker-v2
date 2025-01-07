@@ -3,51 +3,112 @@
 
 {% load static %}
 {% block head%}
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}" />    
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}" />
+    <style>
+        table {
+            width: 100%;
+            border-collapse:collapse;
+        }
+        th, td {
+            border-bottom: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>    
 {% endblock %}
 
 
 {% block content %}
-<h1>This is {{user.username}} Dashboard</h1>
-
+<div class="dashboard-head">
+    <h1>This is {{user.username}} Dashboard</h1>
+</div>
     
     
     <div class="dashboard-container">
     <div class="dashboard-teams-container">
-        <h3>My Teams</h3>
-        {% for team in teams %}
+       <h3>My Teams</h3>
+            <!--{% for team in teams %}
         <div class="teams-columnizer">
-        <div class="team-name">
-            <p>{{ team.team.name }}</p>
+            <div class="team-name">
+                <p>{{ team.team.name }}</p>
+            </div>
+
+            <div class="team-coach">
+                <p>Team Coach - 
+                    {% if team.isCoach %}
+                        Yes
+                    {% else %}
+                        No
+                    {% endif %}
+                </p>
+            
+            
+            </div>
+            <div class="team-details-link">
+                <a href="{% url 'team-details' teamID=team.team.id %}">Team Details</a>
+            </div>
+            
+        </div>
+        <div>
+            <hr>
         </div>
         
-        <div class="team-coach">
-            <p>Team Coach - 
-                {% if team.isCoach %}
-                    Yes
-                {% else %}
-                    No
-                {% endif %}
-            </p>
+        {% endfor %} -->
+        <table>
+            <thead>
+                <tr>
+                    <th>My Teams</th>
+                    <th>Team Coach</th>
+                    <th>Team Link</th>                
+                </tr>
+            </thead>
+            <tbody>
+                {% for team in teams %}
+                    <tr>
+                        <td>{{ team.team.name }}</td>
+                        <td>
+                            {% if team.isCoach %}
+                                Yes
+                            {% else %}
+                                No
+                            {% endif %}
+                        </td>
+                        <td><a href="{% url 'team-details' teamID=team.team.id %}">Team Details</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
         
-        
-        </div>
-        <div class="team-details-link">
-            <a href="{% url 'team-details' teamID=team.team.id %}">Team Details</a>
-        </div>
-        </div>
-        {% endfor %}
     </div>
+    
     
     
     <div class="dashboard-times-container">
         <h3>My Times</h3>
-        <div></div>
-        {% for time in times %}
-        <div>
-            {{ time.level }} - {{ time.time }} <a href="{% url 'update-time' time_id=time.id %}">Update</a>
-        </div>
-        {% endfor %}
+        
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Level</th>
+                    <th>Time</th>
+                    <th>Update Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for time in times %}
+                <tr>
+                <td>{{ time.level }}</td>
+                <td>{{ time.time }}</td> 
+                <td><a href="{% url 'update-time' time_id=time.id %}">Update</a></td>
+            </tbody>
+            </tr>
+            {% endfor %}
+        </table>
+        
     </div>
     </div>
 </div>

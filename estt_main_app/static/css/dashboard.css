@@ -1,3 +1,4 @@
+
 .dashboard-teams-container {
     display: flex;
     flex-direction: column;
@@ -11,16 +12,17 @@
 .teams-columnizer {
     display: flex;
     flex-direction: row;
+    align-items: left;
     justify-content: left;
-    
+    /* border: 5px solid purple; */
 }
 
 .team-coach, .team-name, .team-details-link {
     display: flex;
-    padding: 0 5px;
+    padding-right: 25px;
     align-items: center;
     justify-items: left;
-    border: 3px solid white;
+    /* border: 3px solid white; */
     
     
     
@@ -31,13 +33,19 @@
     flex-direction: column;   
     width: 30%;
     border: 5px solid yellow;
-    margin-right: 25%;
+    /* margin-right: 25%; */
 }
 
 .dashboard-container {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: space-evenly;
     
     
+}
+
+.dashboard-head {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

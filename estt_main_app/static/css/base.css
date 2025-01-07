@@ -1,0 +1,37 @@
+
+
+a {
+    text-decoration: none;
+    color: green;
+    padding: 0 15px;
+}
+
+.nav-container {
+    
+    
+    border: 5px solid red
+}
+
+.user-action-links {
+    display: flex;
+    
+    justify-content: right;
+    border: 3px solid green;
+    
+    
+}
+
+.dashboard-link {
+    display: flex;
+    
+    border: 3px solid purple;
+}
+
+
+.nav-links {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    
+    
+}
