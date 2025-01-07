@@ -5,7 +5,7 @@ from django.urls import reverse_lazy
 from .models import Team_user, Team, Team_game, Game, Level, Time
 from django.contrib.auth.models import User
 from django.views.generic.edit import CreateView, UpdateView
-from .forms import TeamUserForm, EditProfileForm, NewTeamForm, AddTeamUserOnTeamCreationForm, TeamGameForm
+from .forms import TeamUserForm, EditProfileForm, NewTeamForm, AddTeamUserOnTeamCreationForm, TeamGameForm, TimeCreationForm, TimeUpdateForm
 from django.http import HttpResponse
 from django.http import JsonResponse
 
@@ -19,10 +19,11 @@ def home(request):
 #view for the User Dashboard Page
 def userDashboard(request):
     teams = Team_user.objects.filter(user=request.user)
-    
+    times = Time.objects.filter(user=request.user)
     
     return render(request, 'users/dashboard.html', {
-        'teams': teams
+        'teams': teams,
+        'times': times
     })
 
 #logout
@@ -209,4 +210,51 @@ def create_team_game(request, team_id):
     return render(request, 'team/add_team_game.html', {
         'team': team,
         'form': form        
-    })    
+    })
+
+
+#Add new time
+def create_new_time(request):
+    if request.method == 'POST':
+        form = TimeCreationForm(request.POST)
+        if form.is_valid():
+            new_time = form.save(commit=False)
+            new_time.user = request.user
+            new_time.save()
+        return redirect('dashboard')
+    else:
+        form = TimeCreationForm()
+    
+    return render(request, 'time/add_time.html', {
+        'form': form
+    })
+
+
+#Update time and confirm
+def update_time(request, time_id):
+    time = get_object_or_404(Time, id=time_id)
+    
+    if request.method == 'POST':
+        form = TimeUpdateForm(request.POST, instance=time)
+        time = str(time).split(',')
+        if form.is_valid():
+                       
+            if "confirm" in request.POST:                
+                form.save()
+                return redirect('dashboard')
+            else:
+                
+                new_time = form.cleaned_data
+                
+                return render( request, 'time/update_confirm.html', {
+                    'old_time': time[2],
+                    'new_time': new_time,
+                    'form': form
+                })
+            
+    else:
+        form = TimeUpdateForm(instance=time)
+        
+    return render(request, 'time/update_form.html', {
+        'form': form
+    })

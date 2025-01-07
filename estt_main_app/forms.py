@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Team_user, Team, Team_game
+from .models import Team_user, Team, Team_game, Time
 
 
 
@@ -41,3 +41,15 @@ class TeamGameForm(forms.ModelForm):
     class Meta:
         model = Team_game
         fields = ['game']
+
+
+class TimeCreationForm(forms.ModelForm):
+    class Meta:
+        model = Time
+        fields = ['level', 'time']
+
+
+class TimeUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Time
+        fields = ['time']

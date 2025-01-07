@@ -16,5 +16,7 @@ urlpatterns = [
     path('new-team/', views.create_team, name='new-team'),
     path('api/games/', views.get_games, name='get_games'),
     path('api/table-data/', views.get_table_data, name='get_table_data'),
-    path('add-game/<int:team_id>/', views.create_team_game, name='team-game')
+    path('add-game/<int:team_id>/', views.create_team_game, name='team-game'),
+    path('add-time', views.create_new_time, name='add-time'),
+    path('update-time/<int:time_id>', views.update_time, name='update-time')
     ]

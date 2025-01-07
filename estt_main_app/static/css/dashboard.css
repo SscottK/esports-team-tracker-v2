@@ -1,16 +1,43 @@
 .dashboard-teams-container {
     display: flex;
-    flex-direction: row;
-    align-items: center;
-    /* justify-content: space-evenly;
-    justify-items: flex-start; */
-    max-width: 40%;
+    flex-direction: column;
+    
+    justify-content: space-evenly;
+    justify-items: flex-start;
+    width: 30%;
     border: 5px solid yellow;
+}
+
+.teams-columnizer {
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+    
 }
 
 .team-coach, .team-name, .team-details-link {
     display: flex;
     padding: 0 5px;
+    align-items: center;
+    justify-items: left;
+    border: 3px solid white;
+    
+    
+    
+}
+
+.dashboard-times-container {
+    display: flex;
+    flex-direction: column;   
+    width: 30%;
+    border: 5px solid yellow;
+    margin-right: 25%;
+}
+
+.dashboard-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
     
     
 }

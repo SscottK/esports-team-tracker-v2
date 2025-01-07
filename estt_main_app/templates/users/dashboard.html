@@ -8,13 +8,15 @@
 
 
 {% block content %}
-<div>
-    <h1>This is {{user.username}} Dashboard</h1>
-    <h3>My Teams</h3>
-    {% for team in teams %}
+<h1>This is {{user.username}} Dashboard</h1>
+
+    
+    
+    <div class="dashboard-container">
     <div class="dashboard-teams-container">
-        
-        
+        <h3>My Teams</h3>
+        {% for team in teams %}
+        <div class="teams-columnizer">
         <div class="team-name">
             <p>{{ team.team.name }}</p>
         </div>
@@ -33,9 +35,21 @@
         <div class="team-details-link">
             <a href="{% url 'team-details' teamID=team.team.id %}">Team Details</a>
         </div>
-        
+        </div>
+        {% endfor %}
     </div>
-    {% endfor %}
+    
+    
+    <div class="dashboard-times-container">
+        <h3>My Times</h3>
+        <div></div>
+        {% for time in times %}
+        <div>
+            {{ time.level }} - {{ time.time }} <a href="{% url 'update-time' time_id=time.id %}">Update</a>
+        </div>
+        {% endfor %}
+    </div>
+    </div>
 </div>
 
 {% endblock %}

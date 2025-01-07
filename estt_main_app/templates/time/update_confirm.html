@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load static %} 
+{% block content %}
+<h2>Confirm Your Changes</h2>
+<table>
+  <tr>
+    <th>Field</th>
+    <th>Current Value</th>
+    <th>New Value</th>
+  </tr>
+  {% for field in form %}
+  <tr>
+    <td>{{ field.label }}</td>
+    <td>{{ old_time|default_if_none:"-" }}</td>
+    <td>{{ field.value|default_if_none:"-" }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" name="confirm">Confirm</button>
+  <a href="{% url 'dashboard'%}">Cancel</a>
+</form>
+
+{% endblock %}
