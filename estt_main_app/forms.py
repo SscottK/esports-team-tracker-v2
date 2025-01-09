@@ -1,7 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Team_user, Team, Team_game, Time
+from .models import Team_user, Team, Team_game, Time, Target_times, Level
+from dal import autocomplete
 
 
 
@@ -15,6 +16,7 @@ class CustomUserCreationForm(UserCreationForm):
 
 
 class TeamUserForm(forms.ModelForm):
+    user = forms.CharField(widget=forms.TextInput(attrs={'id': 'user-search'}))
     class Meta:
         model = Team_user
         fields = ['user', 'isCoach']
@@ -53,3 +55,25 @@ class TimeUpdateForm(forms.ModelForm):
     class Meta:
         model = Time
         fields = ['time']
+
+
+
+
+class TargetTimesCreationForm(forms.ModelForm):
+    level = forms.ModelChoiceField(
+        queryset=Level.objects.none(),  # Default queryset; will be updated dynamically
+        empty_label="Select a level"
+    )
+    class Meta:
+        model = Target_times
+        fields = ['level', 'high_target', 'low_target']
+
+    def __init__(self, *args, **kwargs):
+        game_id = kwargs.pop('game_id', None)  # Extract game_id from kwargs
+        super().__init__(*args, **kwargs)  # Call the parent initializer
+        if game_id:
+            # Filter the queryset based on game_id
+            self.fields['level'].queryset = Level.objects.filter(game=game_id)
+        else:
+            # Empty queryset if game_id is not provided
+            self.fields['level'].queryset = Level.objects.none()

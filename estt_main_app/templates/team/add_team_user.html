@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
-{% load static %} 
+{% load static %}
+
 {% block content %}
-<h2>Add Memebr to Team</h2>
+<h2>Add Member to Team</h2>
   {% if error_message %}
     <p style="color: red;">{{ error_message }}</p>
   {% endif %}
@@ -10,5 +11,41 @@
     {{ form.as_p }}
     <button type="submit">Add User</button>
   </form>
+
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('user-search');
+        const resultsDropdown = document.createElement('div');
+        resultsDropdown.style.position = 'absolute';
+        resultsDropdown.style.border = '1px solid #ccc';
+        resultsDropdown.style.backgroundColor = '#fff';
+        resultsDropdown.style.zIndex = '1000';
+        searchInput.parentNode.appendChild(resultsDropdown);
+
+        searchInput.addEventListener('input', async () => {
+            const query = searchInput.value;
+            if (query.length < 1) {
+                resultsDropdown.innerHTML = '';
+                return;
+            }
+
+            const response = await fetch(`/search-users/?q=${query}`);
+            const users = await response.json();
+
+            resultsDropdown.innerHTML = '';
+            users.forEach(user => {
+                const option = document.createElement('div');
+                option.textContent = user.username;
+                option.style.cursor = 'pointer';
+                option.addEventListener('click', () => {
+                    searchInput.value = user.username;
+                    resultsDropdown.innerHTML = '';
+                });
+                resultsDropdown.appendChild(option);
+            });
+        });
+    });
+</script>
 
 {% endblock %}

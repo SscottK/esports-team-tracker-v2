@@ -10,7 +10,7 @@
             border-collapse:collapse;
         }
         th, td {
-            border-bottom: 1px solid #ddd;
+            /* border-bottom: 1px solid #ddd; */
             padding: 8px;
             text-align: left;
         }
@@ -29,7 +29,10 @@
     
     <div class="dashboard-container">
     <div class="dashboard-teams-container">
-       <h3>My Teams</h3>
+       <div class="teams-head">
+        
+        <h3>My Teams  </h3> <a href="{% url 'new-team' %}">New Team</a>
+       </div>
             <!--{% for team in teams %}
         <div class="teams-columnizer">
             <div class="team-name">
@@ -60,7 +63,7 @@
         <table>
             <thead>
                 <tr>
-                    <th>My Teams</th>
+                    <th>Team</th>
                     <th>Team Coach</th>
                     <th>Team Link</th>                
                 </tr>
@@ -87,8 +90,9 @@
     
     
     <div class="dashboard-times-container">
-        <h3>My Times</h3>
-        
+        <div class="times-head">
+        <h3>My Times</h3> <a href="{% url 'add-time' %}">New Time</a>
+        </div>
         
         <table>
             <thead>

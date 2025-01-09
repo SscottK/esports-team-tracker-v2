@@ -4,6 +4,7 @@ from django.contrib.auth import views as auth_views
 from django.contrib.auth.views import LogoutView
 
 
+
 urlpatterns = [
     path('', views.home, name='home'),
     path('signup/', views.signup, name='signup'), 
@@ -17,6 +18,8 @@ urlpatterns = [
     path('api/games/', views.get_games, name='get_games'),
     path('api/table-data/', views.get_table_data, name='get_table_data'),
     path('add-game/<int:team_id>/', views.create_team_game, name='team-game'),
-    path('add-time', views.create_new_time, name='add-time'),
-    path('update-time/<int:time_id>', views.update_time, name='update-time')
+    path('add-time/', views.create_new_time, name='add-time'),
+    path('update-time/<int:time_id>', views.update_time, name='update-time'),
+    path('new-target-times/<int:team_id>/<int:game_id>/', views.create_target_times, name='new-target-times'),
+    path('search-users/', views.search_users, name='search-users'),
     ]

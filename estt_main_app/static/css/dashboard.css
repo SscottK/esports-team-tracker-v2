@@ -40,6 +40,7 @@
     display: flex;
     flex-direction: row;
     justify-content: space-evenly;
+    font-size: 20px;
     
     
 }
@@ -48,4 +49,11 @@
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.teams-head, .times-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 5px solid blue;
 }

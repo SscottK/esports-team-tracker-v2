@@ -10,6 +10,7 @@
 <div class="team-detail-container" x-data="gameSelection()" x-init=loadGames({{team.id}})> 
     <div class="team-detail-headers">
         <h1>Team Details</h1>
+        
         <div class="add-member-container">    
             <h3>Name:<span>&nbsp;{{ team.name }}</span></h3>
             {% if team_user.isCoach %}
@@ -65,45 +66,57 @@
 
 
     <div class="game-table-container">
-      
+       
        
     
     <template x-if="tableData">
       
+       
+      
       <div x-show="tableData.levels.length > 0" style="display: none;" class="game-table">
-        <h2 x-text="tableData.game"></h2> 
-          <table border="1">
-            <thead>
+        <h2 x-text="tableData.game"></h2>
+        <div x-data="{ id: null }" x-init="fetchId().then(result => id = result)">
+          <a :href="id ? `/new-target-times/${tableData.team_id}/${tableData.game_id}/` : '#'" class="btn">
+            Add Target Times
+          </a>
+        </div>
+      
+        <table border="1">
+          <thead>
+            <tr>
+              <th>Level</th>
+              <template x-for="user in tableData.users" :key="user.user">
+                <th x-text="user.user__username"></th>
+              </template>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="level in tableData.levels" :key="level.id">
               <tr>
-                <th>Level</th>
+                <td x-text="level.level_name"></td>
                 <template x-for="user in tableData.users" :key="user.user">
-                  <th x-text="user.user__username"></th>
+                  <td x-text="getTime(level.id, user.user)"></td>
                 </template>
               </tr>
-            </thead>
-            <tbody>
-              <template x-for="level in tableData.levels" :key="level.id">
-                <tr>
-                  <td x-text="level.level_name"></td>
-                  <template x-for="user in tableData.users" :key="user.user">
-                    <td x-text="getTime(level.id, user.user)"></td>
-                  </template>
-                </tr>
-              </template>
-            </tbody>
-          </table>
-        </div>
-      </div>      
+            </template>
+          </tbody>
+        </table>
+      </div>
+        
+            
     </template>
+    
     <template x-if="!tableData.levels.length">
       <div>
           
           <p>No table Data for this game - Please select another game</p>
           
       </div>
+      
     </template>
     
   </div>
+  
 </div>
 
 <script>
@@ -147,10 +160,19 @@
             }
             this.tableData = await response.json();
             this.tableData.game = `Tracked Data for ${this.tableData.game}`
+            
             this.errorMessage = '';
           } catch (error) {
             this.errorMessage = error.message;
           }
+        },
+        async fetchId() {
+          // Simulating an API call or dynamic computation
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              resolve(42); // Replace this with your real logic
+            }, 1000);
+          });
         },
   
         getTime(levelId, userId) {

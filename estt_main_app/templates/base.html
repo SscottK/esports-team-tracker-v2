@@ -23,10 +23,12 @@
         </div>
         <div class="user-action-links">
           <a href="{% url 'edit-profile' user_id=user.id%}">Edit Profile</a>
+
+          
         
-          <a href="{% url 'new-team' %}">New Team</a>
+          
         
-          <a href="{% url 'add-time' %}">New Time</a>
+          
         
           <a href="{% url 'logout' %}" onclick="document.getElementById('logout-form').submit(); return false;">
             Log Out

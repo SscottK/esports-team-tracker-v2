@@ -5,9 +5,10 @@ from django.urls import reverse_lazy
 from .models import Team_user, Team, Team_game, Game, Level, Time
 from django.contrib.auth.models import User
 from django.views.generic.edit import CreateView, UpdateView
-from .forms import TeamUserForm, EditProfileForm, NewTeamForm, AddTeamUserOnTeamCreationForm, TeamGameForm, TimeCreationForm, TimeUpdateForm
+from .forms import TeamUserForm, EditProfileForm, NewTeamForm, AddTeamUserOnTeamCreationForm, TeamGameForm, TimeCreationForm, TimeUpdateForm, TargetTimesCreationForm
 from django.http import HttpResponse
 from django.http import JsonResponse
+from dal import autocomplete
 
 # Create your views here.
 
@@ -78,25 +79,31 @@ def team_detail(request, teamID):
 def add_team_member(request, teamID):
     team_user = get_object_or_404(Team_user, team=teamID,user=request.user)
     team = get_object_or_404(Team, id=teamID)
-    
+    print(f'team user 1 {team_user, team_user.team}')
 
     if not team_user.isCoach:
         raise HttpResponse('You are not allowed to do that')
     
     if request.method == 'POST':
+        
+        
         form = TeamUserForm(request.POST)
+        
         if form.is_valid():
-            team_user = form.save(commit=False)
-            team_user.team = team
-            team_user.save()
-            return redirect(f'/team-details/{teamID}')
+            new_team_user = form.save(commit=False)
+            new_team_user.team = team
+            new_team_user.user = get_object_or_404(User, id=request.user.id)
+            # print(f'team user 2 {new_team_user, new_team_user.team}')
+            new_team_user.save()
+        return redirect(f'/team-details/{teamID}')
     else:
+        
         form = TeamUserForm()
     
     return render(request, 'team/add_team_user.html', {
         'form': form,
         'team': team,
-        
+    
     })
 
 
@@ -167,18 +174,20 @@ def get_games(request):
 def get_table_data(request):
     try:
         game_id = request.GET.get('game_id')
+        
         if not game_id:
             return JsonResponse({"error": "Game is required"}, status=400)
         try:
             team_game = Team_game.objects.get(game=game_id)
             game = get_object_or_404(Game, id=game_id)
+            
         except Game.DoesNotExist:
             return JsonResponse({"error": "Game not found"}, status=404)
 
         team_members = Team_user.objects.filter(team=team_game.team).values('user', 'user__username')
         levels = Level.objects.filter(game=game).values('id', 'level_name')
         times = Time.objects.filter(level__game=game).values('level_id', 'user_id', 'time')
-
+        
         time_dict = {f"{time['level_id']}-{time['user_id']}": time['time'] for time in times}
         # game = Game.objects.filter(id=game_id).values('game')
         return JsonResponse({
@@ -186,6 +195,8 @@ def get_table_data(request):
             'levels': list(levels),
             'times': time_dict,
             'game': str(game),
+            'game_id': game_id,
+            'team_id': team_game.team.id            
         })
     except Exception as e:
         return JsonResponse({"error": f"An unexpected error occurred: {str(e)}"}, status=500)
@@ -198,6 +209,7 @@ def create_team_game(request, team_id):
     
     if request.method == 'POST':
         form = TeamGameForm(request.POST)
+        
         if form.is_valid():
             new_team_game = form.save(commit=False)
             new_team_game.team = team
@@ -258,3 +270,45 @@ def update_time(request, time_id):
     return render(request, 'time/update_form.html', {
         'form': form
     })
+
+
+#create target time
+def create_target_times(request, team_id, game_id):
+    game = get_object_or_404(Game, id=game_id)
+    team = get_object_or_404(Team, id=team_id)
+    levels = Level.objects.filter(game=game_id)
+    
+    initial_data = {
+        'options': levels,
+        'high_target': "00:00.00",
+        'low_target': "00:00.00"
+    }
+    if request.method == 'POST':
+        form = TargetTimesCreationForm(request.POST, initial=initial_data, game_id=game_id)
+        
+        if form.is_valid():
+            new_target_times = form.save(commit=False)
+            new_target_times.team = team
+            new_target_times.save()
+        return redirect(f'/team-details/{team_id}')
+    else:
+        form = TargetTimesCreationForm(initial=initial_data, game_id=game_id)
+
+    form.fields['level'].queryset = levels
+
+    return render(request, 'target_time/add_tt.html', {
+        'form.levels': levels,
+        'game': game,
+        'form': form,
+        'team': team.id
+    })
+
+
+
+#autocomplet for user search
+def search_users(request):
+    query = request.GET.get('q', '')
+    users = User.objects.filter(username__icontains=query)[:10]
+    results = [ {'id': user.id, 'username': user.username} for user in users]
+    return JsonResponse(results, safe=False)
+    x
