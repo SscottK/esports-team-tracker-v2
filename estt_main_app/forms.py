@@ -21,6 +21,13 @@ class TeamUserForm(forms.ModelForm):
         model = Team_user
         fields = ['user', 'isCoach']
 
+    def clean_user(self):
+        user_id = self.cleaned_data['user']
+        try:
+            return User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            raise forms.ValidationError("Selected user does not exist.")
+
 
 class EditProfileForm(forms.ModelForm):
     class Meta:
@@ -46,9 +53,24 @@ class TeamGameForm(forms.ModelForm):
 
 
 class TimeCreationForm(forms.ModelForm):
+    # add the level stuff from tarrget times creation form exactly.
+    level = forms.ModelChoiceField(
+        queryset=Level.objects.none(),  # Default queryset; will be updated dynamically
+        empty_label="Select a level"
+    )
     class Meta:
         model = Time
         fields = ['level', 'time']
+
+    def __init__(self, *args, **kwargs):
+        game_id = kwargs.pop('game_id', None)  # Extract game_id from kwargs
+        super().__init__(*args, **kwargs)  # Call the parent initializer
+        # if game_id:
+        #     # Filter the queryset based on game_id
+        #     self.fields['level'].queryset = Level.objects.filter(game=game_id)
+        # else:
+        #     # Empty queryset if game_id is not provided
+        #     self.fields['level'].queryset = Level.objects.none()
 
 
 class TimeUpdateForm(forms.ModelForm):

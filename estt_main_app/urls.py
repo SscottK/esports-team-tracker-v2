@@ -22,4 +22,6 @@ urlpatterns = [
     path('update-time/<int:time_id>', views.update_time, name='update-time'),
     path('new-target-times/<int:team_id>/<int:game_id>/', views.create_target_times, name='new-target-times'),
     path('search-users/', views.search_users, name='search-users'),
+    path('api/new-time-get-games/', views.new_time_get_games, name='new-time-get-games'),
+    path('api/get-levels/', views.get_levels, name='get-levels'),
     ]

@@ -75,25 +75,29 @@ def team_detail(request, teamID):
         'team_user': team_user,
         'teams': teams
     })
+
+
 #add member to team
 def add_team_member(request, teamID):
+    
+    print(type(request))
     team_user = get_object_or_404(Team_user, team=teamID,user=request.user)
     team = get_object_or_404(Team, id=teamID)
-    print(f'team user 1 {team_user, team_user.team}')
+    # print(f'team user 1 {team_user, team_user.team}')
 
     if not team_user.isCoach:
         raise HttpResponse('You are not allowed to do that')
     
     if request.method == 'POST':
-        
-        
+        user_id = request.POST.get('user')        
+        user = get_object_or_404(User, id=user_id)
         form = TeamUserForm(request.POST)
         
         if form.is_valid():
             new_team_user = form.save(commit=False)
             new_team_user.team = team
-            new_team_user.user = get_object_or_404(User, id=request.user.id)
-            # print(f'team user 2 {new_team_user, new_team_user.team}')
+                       
+            print(f'team user 2 {new_team_user.user, new_team_user.team}')
             new_team_user.save()
         return redirect(f'/team-details/{teamID}')
     else:
@@ -105,6 +109,13 @@ def add_team_member(request, teamID):
         'team': team,
     
     })
+
+#autocomplet for user search to add user to team
+def search_users(request):
+    query = request.GET.get('q', '')
+    users = User.objects.filter(username__icontains=query)[:10]
+    results = [ {'id': user.id, 'username': user.username} for user in users]
+    return JsonResponse(results, safe=False)
 
 
 #edit profile view
@@ -227,19 +238,22 @@ def create_team_game(request, team_id):
 
 #Add new time
 def create_new_time(request):
+    
     if request.method == 'POST':
         form = TimeCreationForm(request.POST)
         if form.is_valid():
-            new_time = form.save(commit=False)
-            new_time.user = request.user
-            new_time.save()
-        return redirect('dashboard')
+            time_instance = form.save(commit=False)
+            time_instance.user = request.user  # Assign the current user
+            time_instance.save()
+            return JsonResponse({'success': True, 'message': 'Time saved successfully!'})
+        else:
+            return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     else:
+        
         form = TimeCreationForm()
-    
-    return render(request, 'time/add_time.html', {
-        'form': form
-    })
+        return render(request, 'time/add_time.html', {
+            'form': form
+            })
 
 
 #Update time and confirm
@@ -304,11 +318,20 @@ def create_target_times(request, team_id, game_id):
     })
 
 
+#get all games for new time
+def new_time_get_games(request):    
+    if request.method == 'GET':
+        games = Game.objects.values('id', 'game')
+        return JsonResponse(list(games), safe=False)  # No wrapping key
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
 
-#autocomplet for user search
-def search_users(request):
-    query = request.GET.get('q', '')
-    users = User.objects.filter(username__icontains=query)[:10]
-    results = [ {'id': user.id, 'username': user.username} for user in users]
-    return JsonResponse(results, safe=False)
-    x
+
+#get levels for game when creating new time
+def get_levels(request):
+    game_id = request.GET.get('game_id')
+    if game_id:
+        levels = Level.objects.filter(game_id=game_id).values('id', 'level_name')
+        return JsonResponse(list(levels), safe=False)
+    return JsonResponse({'error': 'Game ID not provided'}, status=400)
+
+    

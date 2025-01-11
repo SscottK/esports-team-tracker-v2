@@ -1,14 +1,104 @@
 {% extends 'base.html' %}
-{% load static %} 
+{% load static %}
+{% block head%}
+    
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>    
+{% endblock %} 
 {% block content %}
-<h2>New Time</h2>
-  {% if error_message %}
-    <p style="color: red;">{{ error_message }}</p>
-  {% endif %}
-  <form method="post">
+<div x-data="timeForm()" x-init="loadGames()">
+  <!-- Game Selection -->
+   <h1>New time for {{user.username}}</h1>
+  <h3>You must choose a game in order to select a level and input your time</h3>
+  <select name="games" id="games" @change="loadLevels($event.target.value)">
+    <option value="" disabled selected>Select a game</option>
+    <template x-for="game in games" :key="game.id">
+      <option :value="game.id" x-text="game.game"></option>
+    </template>
+  </select>
+
+  <!-- Level and Time Form -->
+  <form method="post" x-show="levels.length > 0" @submit.prevent="submitForm">
     {% csrf_token %}
-    {{ form.as_p }}    
+    <select name="level" required>
+      <option value="" disabled selected>Select a level</option>
+      <template x-for="level in levels" :key="level.id">
+        <option :value="level.id" x-text="level.level_name"></option>
+      </template>
+    </select>
+    <input type="text" name="time" placeholder="Enter time (e.g., 00:00.00)" required />
     <button type="submit">Add Time</button>
   </form>
 
+  <!-- Error Message -->
+  <p x-show="errorMessage" style="color: red;" x-text="errorMessage"></p>
+</div>
+
+<script>
+function timeForm() {
+  return {
+    games: [],
+    levels: [],
+    errorMessage: '',
+    async loadGames() {
+      try {
+        const response = await fetch('/api/new-time-get-games/');
+        if (!response.ok) throw new Error('Failed to fetch games.');
+        this.games = await response.json();
+      } catch (error) {
+        this.errorMessage = error.message;
+      }
+    },
+    async loadLevels(gameId) {
+      if (!gameId) {
+        this.errorMessage = "Please select a game.";
+        return;
+      }
+      try {
+        const response = await fetch(`/api/get-levels/?game_id=${gameId}`);
+        if (!response.ok) throw new Error('Failed to fetch levels.');
+        this.levels = await response.json();
+        this.errorMessage = '';
+      } catch (error) {
+        this.errorMessage = error.message;
+      }
+    },
+    async submitForm() {
+    const formData = new FormData(document.querySelector('form'));
+    
+      try {
+        const response = await fetch('/add-time/', {
+          method: 'POST',
+          body: formData,
+        });
+        console.log()
+        // Ensure the response is valid JSON
+        const result = await response.json();
+        if (response.ok && result.success) {
+          if (confirm("Time saved successfully! Add another?")) {
+            document.querySelector('form').reset();
+            this.levels = [];
+          } else {
+            window.location.href = '/dashboard/';
+          }
+        } else {
+          // Handle form errors
+          this.errorMessage = result.errors
+            ? Object.values(result.errors).flat().join(', ')
+            : "An unexpected error occurred.";
+        }
+      } catch (error) {
+        this.errorMessage = "Failed to submit the form. Please try again.";
+      }
+    },
+    showConfirmation() {
+      if (confirm("Time saved successfully! Would you like to add another?")) {
+        document.querySelector('form').reset(); // Reset form for new entry
+        this.levels = []; // Clear levels
+      } else {
+        window.location.href = '/dashboard/'; // Redirect to dashboard
+      }
+    },
+  };
+}
+</script>
 {% endblock %}

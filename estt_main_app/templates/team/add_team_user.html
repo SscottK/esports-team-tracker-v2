@@ -8,7 +8,8 @@
   {% endif %}
   <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
+    {{ form.as_p }}    
+    <input type="hidden" id="user-id" name="user">
     <button type="submit">Add User</button>
   </form>
 
@@ -16,6 +17,7 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
         const searchInput = document.getElementById('user-search');
+        const userIdInput = document.getElementById('user-id');
         const resultsDropdown = document.createElement('div');
         resultsDropdown.style.position = 'absolute';
         resultsDropdown.style.border = '1px solid #ccc';
@@ -40,6 +42,7 @@
                 option.style.cursor = 'pointer';
                 option.addEventListener('click', () => {
                     searchInput.value = user.username;
+                    userIdInput.value = user.id
                     resultsDropdown.innerHTML = '';
                 });
                 resultsDropdown.appendChild(option);
