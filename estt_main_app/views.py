@@ -9,6 +9,8 @@ from .forms import TeamUserForm, EditProfileForm, NewTeamForm, AddTeamUserOnTeam
 from django.http import HttpResponse
 from django.http import JsonResponse
 from dal import autocomplete
+import logging
+logger = logging.getLogger('estt_main_app')
 
 # Create your views here.
 
@@ -240,20 +242,27 @@ def create_team_game(request, team_id):
 def create_new_time(request):
     
     if request.method == 'POST':
-        form = TimeCreationForm(request.POST)
+        print('post being called')
+        game_id = request.POST.get('game')
+        form = TimeCreationForm(request.POST, game_id=game_id)
+        print(f"form dtat: {form.data}")
+        print(f"Post Request: {request.POST}")
+        # logger.debug(f"POST Data: {request.POST}")
+        # logger.debug(f"Form Data: {form.data}")  # Log the form data
         if form.is_valid():
             time_instance = form.save(commit=False)
             time_instance.user = request.user  # Assign the current user
             time_instance.save()
             return JsonResponse({'success': True, 'message': 'Time saved successfully!'})
         else:
+            logger.debug(f"Form Errors: {form.errors}")
             return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     else:
-        
-        form = TimeCreationForm()
+        game_id = request.GET.get('game')  # Optional: pre-load levels for a specific game
+        form = TimeCreationForm(game_id=game_id)
         return render(request, 'time/add_time.html', {
             'form': form
-            })
+        })
 
 
 #Update time and confirm

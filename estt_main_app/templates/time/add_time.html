@@ -9,7 +9,7 @@
   <!-- Game Selection -->
    <h1>New time for {{user.username}}</h1>
   <h3>You must choose a game in order to select a level and input your time</h3>
-  <select name="games" id="games" @change="loadLevels($event.target.value)">
+  <select name="game" id="games" @change="loadLevels($event.target.value)">
     <option value="" disabled selected>Select a game</option>
     <template x-for="game in games" :key="game.id">
       <option :value="game.id" x-text="game.game"></option>
@@ -62,24 +62,37 @@ function timeForm() {
         this.errorMessage = error.message;
       }
     },
-    async submitForm() {
-    const formData = new FormData(document.querySelector('form'));
-    
+    async submitForm() { 
+      
+      const levelValue = document.querySelector('select[name="level"]').value;
+      const timeValue = document.querySelector('input[name="time"]').value;
+        
+      console.log("Level Value:", levelValue); // Log the selected level
+      console.log("Time Value:", timeValue); // Log the entered time
+      
+      const formData = new FormData(document.querySelector('form'));
+  
+      const gameId = document.querySelector('#games').value;      
+      formData.append('game', gameId);
+      formData.append('level', levelValue);
+      formData.append('time', timeValue);
+      console.log("Level:", formData.get('level'));
+      console.log("Time:", formData.get('time'));
+
+      // Debugging: Log the form data
+      for (const [key, value] of formData.entries()) {
+        console.log(`${key}: ${value}`);
+      }
+      console.log(this.levels)
       try {
         const response = await fetch('/add-time/', {
           method: 'POST',
           body: formData,
         });
-        console.log()
-        // Ensure the response is valid JSON
+
         const result = await response.json();
         if (response.ok && result.success) {
-          if (confirm("Time saved successfully! Add another?")) {
-            document.querySelector('form').reset();
-            this.levels = [];
-          } else {
-            window.location.href = '/dashboard/';
-          }
+          this.showConfirmation();
         } else {
           // Handle form errors
           this.errorMessage = result.errors
@@ -87,10 +100,11 @@ function timeForm() {
             : "An unexpected error occurred.";
         }
       } catch (error) {
-        this.errorMessage = "Failed to submit the form. Please try again.";
+    this.errorMessage = "Failed to submit the form. Please try again.";
       }
     },
     showConfirmation() {
+      
       if (confirm("Time saved successfully! Would you like to add another?")) {
         document.querySelector('form').reset(); // Reset form for new entry
         this.levels = []; // Clear levels

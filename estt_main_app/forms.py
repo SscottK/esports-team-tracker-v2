@@ -65,9 +65,9 @@ class TimeCreationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         game_id = kwargs.pop('game_id', None)  # Extract game_id from kwargs
         super().__init__(*args, **kwargs)  # Call the parent initializer
-        # if game_id:
-        #     # Filter the queryset based on game_id
-        #     self.fields['level'].queryset = Level.objects.filter(game=game_id)
+        if game_id:
+            # Filter the queryset based on game_id
+            self.fields['level'].queryset = Level.objects.filter(game=game_id)
         # else:
         #     # Empty queryset if game_id is not provided
         #     self.fields['level'].queryset = Level.objects.none()
