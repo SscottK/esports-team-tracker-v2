@@ -1,122 +1,114 @@
 {% extends "base.html" %}
 {% load static %}
-{% block head%}
+{% block head %}
     <link rel="stylesheet" href="{% static 'css/team_detail.css' %}" />
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>    
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 {% endblock %}
 
 {% block content %}
-
-<div class="team-detail-container" x-data="gameSelection()" x-init=loadGames({{team.id}})> 
-    <div class="team-detail-headers">
+<div class="container mt-4" x-data="gameSelection()" x-init="loadGames({{ team.id }})"> 
+    <div class="text-center mb-4">
         <h1>Team Details</h1>
-        
-        <div class="add-member-container">    
-            <h3>Name:<span>&nbsp;{{ team.name }}</span></h3>
-            {% if team_user.isCoach %}
-                <a href="/team/{{team.id}}/add-member">Add Member</a>
-            {% endif %}
-        </div> 
-    </div>
-    <div class="members-games-container">        
-        <div class="games-container">
-            <div class="add-game">
-                <h2>Games</h2> <a href="/add-game/{{team.id}}/">&nbsp;Add Game</a>
-            </div>
-            <div >
-                <!-- Error Display -->
-                <!-- <div x-show="errorMessage" class="error-message" style="color: red;" x-text="errorMessage"></div> -->
-                <ul>
-                    <template x-for="game in games" :key="game.game_id">
-                      <li style="list-style-type: none;">
-                        <button @click="loadTable(game.game_id)" class="game-link" x-text="game.game__game"></button>
-                      </li>
-                    </template>
-                </ul>
-            </div>
-        
-        </div>
-        <div class="coaches-container">
-            <h2>Team Coaches</h2>
-            <ul>
-                {% for member in members %}
-                    {% if  member.isCoach %}
-                        <li style="list-style-type: none;">
-                            {{ member.user}}
-                        </li>
-                    {% endif %}
-                {% endfor %}
-            </ul>
-        </div>
-    
-        <div class="members-container">
-               
-            <h2>Team Members</h2>
-            <ul>
-                {% for member in members %}
-                    {% if not member.isCoach %}
-                        <li style="list-style-type: none;">
-                            {{ member.user}}
-                        </li>
-                    {% endif %}
-                {% endfor %}
-            </ul>
-        </div>
+        <h3>Name: <span class="font-weight-bold">{{ team.name }}</span></h3>
+        {% if team_user.isCoach %}
+            <a href="/team/{{ team.id }}/add-member" class="btn btn-primary">Add Member</a>
+        {% endif %}
     </div>
 
+    <div class="row">
+      <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">Games</h2>
+                <a href="/add-game/{{ team.id }}/" class="btn btn-success">Add Game</a>
+            </div>
+            <div class="card-body">
+                <ul class="list-group">
+                    <template x-for="game in games" :key="game.game_id">
+                        <li class="list-group-item">
+                            <button @click="loadTable(game.game_id)" class="btn btn-link" x-text="game.game__game"></button>
+                        </li>
+                    </template>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2>Team Coaches</h2>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for member in members %}
+                            {% if member.isCoach %}
+                                <li class="list-group-item">{{ member.user }}</li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2>Team Members</h2>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for member in members %}
+                            {% if not member.isCoach %}
+                                <li class="list-group-item">{{ member.user }}</li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="game-table-container">
-       
-       
-    
-    <template x-if="tableData">
-      
-       
-      
-      <div x-show="tableData.levels.length > 0" style="display: none;" class="game-table">
-        <h2 x-text="tableData.game"></h2>
-        <div x-data="{ id: null }" x-init="fetchId().then(result => id = result)">
-          <a :href="id ? `/new-target-times/${tableData.team_id}/${tableData.game_id}/` : '#'" class="btn">
-            Add Target Times
-          </a>
-        </div>
-      
-        <table border="1">
-          <thead>
-            <tr>
-              <th>Level</th>
-              <template x-for="user in tableData.users" :key="user.user">
-                <th x-text="user.user__username"></th>
-              </template>
-            </tr>
-          </thead>
-          <tbody>
-            <template x-for="level in tableData.levels" :key="level.id">
-              <tr>
-                <td x-text="level.level_name"></td>
-                <template x-for="user in tableData.users" :key="user.user">
-                  <td x-text="getTime(level.id, user.user)"></td>
-                </template>
-              </tr>
-            </template>
-          </tbody>
-        </table>
-      </div>
-        
-            
-    </template>
-    
-    <template x-if="!tableData.levels.length">
-      <div>
-          
-          <p>No table Data for this game - Please select another game</p>
-          
-      </div>
-      
-    </template>
-    
-  </div>
-  
+        <template x-if="tableData">
+            <div x-show="tableData.levels.length > 0" class="game-table">
+                <h2 x-text="tableData.game"></h2>
+                <div x-data="{ id: null }" x-init="fetchId().then(result => id = result)">
+                    <a :href="id ? `/new-target-times/${tableData.team_id}/${tableData.game_id}/` : '#'" class="btn btn-warning">
+                        Add Target Times
+                    </a>
+                </div>
+
+                <table class="table table-bordered mt-3">
+                    <thead>
+                        <tr>
+                            <th>Level</th>
+                            <template x-for="user in tableData.users" :key="user.user">
+                                <th x-text="user.user__username"></th>
+                            </template>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template x-for="level in tableData.levels" :key="level.id">
+                            <tr>
+                                <td x-text="level.level_name"></td>
+                                <template x-for="user in tableData.users" :key="user.user">
+                                    <td x-text="getTime(level.id, user.user)"></td>
+                                </template>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </template>
+
+        <template x-if="!tableData.levels.length">
+            <div class="alert alert-warning">
+                <p>No table data for this game - Please select another game</p>
+            </div>
+        </template>
+    </div>
 </div>
 
 <script>
@@ -124,7 +116,6 @@
       return {
         games: [],
         tableData: { users: [], levels: [], times: {}},
-        
         errorMessage: '',
   
         async loadGames(teamId) {
@@ -139,8 +130,6 @@
               throw new Error(errorData.error || "Failed to fetch games.");
             }
             this.games = await response.json();
-            
-            
             this.errorMessage = '';
           } catch (error) {
             this.errorMessage = error.message;
@@ -159,15 +148,13 @@
               throw new Error(errorData.error || "Failed to fetch table data.");
             }
             this.tableData = await response.json();
-            this.tableData.game = `Tracked Data for ${this.tableData.game}`
-            
+            this.tableData.game = `Tracked Data for ${this.tableData.game}`;
             this.errorMessage = '';
           } catch (error) {
             this.errorMessage = error.message;
           }
         },
         async fetchId() {
-          // Simulating an API call or dynamic computation
           return new Promise((resolve) => {
             setTimeout(() => {
               resolve(42); // Replace this with your real logic
@@ -179,6 +166,6 @@
           return this.tableData.times[`${levelId}-${userId}`] || '-';
         }
       };
-    }
-  </script>
+  }
+</script>
 {% endblock %}

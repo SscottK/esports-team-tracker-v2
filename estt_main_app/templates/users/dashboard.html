@@ -1,17 +1,16 @@
 {% extends "base.html" %}
 
-
 {% load static %}
-{% block head%}
+{% block head %}
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}" />
     <style>
         table {
             width: 100%;
-            border-collapse:collapse;
+            border-collapse: collapse;
         }
         th, td {
-            /* border-bottom: 1px solid #ddd; */
-            padding: 8px;
+            padding: 12px; /* Increased padding for better spacing */
             text-align: left;
         }
         th {
@@ -20,101 +19,77 @@
     </style>    
 {% endblock %}
 
-
 {% block content %}
-<div class="dashboard-head">
-    <h1>This is {{user.username}} Dashboard</h1>
-</div>
-    
+<div class="container">
+    <div class="dashboard-head">
+        <h1>This is {{ user.username }}'s Dashboard</h1>
+    </div>
     
     <div class="dashboard-container">
-    <div class="dashboard-teams-container">
-       <div class="teams-head">
-        
-        <h3>My Teams  </h3> <a href="{% url 'new-team' %}">New Team</a>
-       </div>
-            <!--{% for team in teams %}
-        <div class="teams-columnizer">
-            <div class="team-name">
-                <p>{{ team.team.name }}</p>
+        <div class="dashboard-teams-container mb-4">
+            <div class="teams-head d-flex justify-content-between align-items-center">
+                <h3>My Teams</h3>
+                <a class="btn btn-primary" href="{% url 'new-team' %}">New Team</a>
+            </div>            
+            <div class="table-responsive"> <!-- Added responsive wrapper -->
+                <table class="table table-bordered mt-2">
+                    <thead>
+                        <tr>
+                            <th>Team</th>
+                            <th>Team Coach</th>
+                            <th>Team Link</th>                
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for team in teams %}
+                            <tr>
+                                <td>{{ team.team.name }}</td>
+                                <td>
+                                    {% if team.isCoach %}
+                                        Yes
+                                    {% else %}
+                                        No
+                                    {% endif %}
+                                </td>
+                                <td><a href="{% url 'team-details' teamID=team.team.id %}">Details</a></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-
-            <div class="team-coach">
-                <p>Team Coach - 
-                    {% if team.isCoach %}
-                        Yes
-                    {% else %}
-                        No
-                    {% endif %}
-                </p>
-            
-            
-            </div>
-            <div class="team-details-link">
-                <a href="{% url 'team-details' teamID=team.team.id %}">Team Details</a>
-            </div>
-            
-        </div>
-        <div>
-            <hr>
-        </div>
-        
-        {% endfor %} -->
-        <table>
-            <thead>
-                <tr>
-                    <th>Team</th>
-                    <th>Team Coach</th>
-                    <th>Team Link</th>                
-                </tr>
-            </thead>
-            <tbody>
-                {% for team in teams %}
-                    <tr>
-                        <td>{{ team.team.name }}</td>
-                        <td>
-                            {% if team.isCoach %}
-                                Yes
-                            {% else %}
-                                No
-                            {% endif %}
-                        </td>
-                        <td><a href="{% url 'team-details' teamID=team.team.id %}">Team Details</a></td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        
-    </div>
-    
-    
-    
-    <div class="dashboard-times-container">
-        <div class="times-head">
-        <h3>My Times</h3> <a href="{% url 'add-time' %}">New Time</a>
         </div>
         
-        <table>
-            <thead>
-                <tr>
-                    <th>Level</th>
-                    <th>Time</th>
-                    <th>Update Link</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for time in times %}
-                <tr>
-                <td>{{ time.level }}</td>
-                <td>{{ time.time }}</td> 
-                <td><a href="{% url 'update-time' time_id=time.id %}">Update</a></td>
-            </tbody>
-            </tr>
-            {% endfor %}
-        </table>
-        
-    </div>
+        <div class="dashboard-times-container">
+            <div class="times-head d-flex justify-content-between align-items-center">
+                <h3>My Times</h3>
+                <a class="btn btn-primary" href="{% url 'add-time' %}">New Time</a>
+            </div>
+            
+            <div class="table-responsive"> <!-- Added responsive wrapper -->
+                <table class="table table-bordered mt-2">
+                    <thead>
+                        <tr>
+                            <th>Level</th>
+                            <th>Time</th>
+                            <th>Update Link</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for time in times %}
+                        <tr>
+                            <td>{{ time.level }}</td>
+                            <td>{{ time.time }}</td> 
+                            <td><a href="{% url 'update-time' time_id=time.id %}">Update</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 {% endblock %}
