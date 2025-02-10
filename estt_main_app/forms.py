@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Team_user, Team, Team_game, Time, Target_times, Level
+from .models import Team_user, Team, Team_game, Time, Target_times, Level, Organization
 from dal import autocomplete
 
 
@@ -99,3 +99,9 @@ class TargetTimesCreationForm(forms.ModelForm):
         else:
             # Empty queryset if game_id is not provided
             self.fields['level'].queryset = Level.objects.none()
+
+
+class NewOrganizationForm(forms.ModelForm):
+    class Meta:
+        model = Organization
+        fields = ['name']

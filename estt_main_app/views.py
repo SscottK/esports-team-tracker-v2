@@ -3,10 +3,10 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from .forms import CustomUserCreationForm
 from django.urls import reverse_lazy
-from .models import Team_user, Team, Team_game, Game, Level, Time
+from .models import Team_user, Team, Team_game, Game, Level, Time, Organization
 from django.contrib.auth.models import User
 from django.views.generic.edit import CreateView, UpdateView
-from .forms import TeamUserForm, EditProfileForm, NewTeamForm, AddTeamUserOnTeamCreationForm, TeamGameForm, TimeCreationForm, TimeUpdateForm, TargetTimesCreationForm
+from .forms import TeamUserForm, EditProfileForm, NewTeamForm, AddTeamUserOnTeamCreationForm, TeamGameForm, TimeCreationForm, TimeUpdateForm, TargetTimesCreationForm, NewOrganizationForm
 from django.http import HttpResponse
 from django.http import JsonResponse
 
@@ -23,10 +23,11 @@ def home(request):
 def userDashboard(request):
     teams = Team_user.objects.filter(user=request.user)
     times = Time.objects.filter(user=request.user)
-    
+    user_org = get_object_or_404(Organization, user=request.user)
     return render(request, 'users/dashboard.html', {
         'teams': teams,
-        'times': times
+        'times': times,
+        'org': user_org
     })
 
 # Logout
@@ -332,3 +333,10 @@ def get_levels(request):
         levels = Level.objects.filter(game_id=game_id).values('id', 'level_name')
         return JsonResponse(list(levels), safe=False)
     return JsonResponse({'error': 'Game ID not provided'}, status=400)
+
+
+#create new organization
+class CreateOrganization(CreateView):
+    model = Organization
+    form_class = NewOrganizationForm
+    template_name = 'organization/new_org.html'

@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+# from .views import CreateOrganization
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.views import LogoutView
 
@@ -24,4 +25,5 @@ urlpatterns = [
     path('search-users/', views.search_users, name='search-users'),
     path('api/new-time-get-games/', views.new_time_get_games, name='new-time-get-games'),
     path('api/get-levels/', views.get_levels, name='get-levels'),
+    path('new-org/', views.CreateOrganization.as_view(), name='new-org')
     ]

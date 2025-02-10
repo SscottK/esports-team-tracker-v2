@@ -1,5 +1,8 @@
 {% extends 'base.html' %}
-{% load static %} 
+{% load static %}
+{% block head %}
+    <title>ESTT - Edit Time</title>
+{% endblock %}  
 {% block content %}
 <h2>Update Time</h2>
   {% if error_message %}
