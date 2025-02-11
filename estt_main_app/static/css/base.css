@@ -1,5 +1,6 @@
 body {
     background-color: #000 !important;
+    
 }
 
 a {
@@ -36,4 +37,8 @@ a {
     justify-content: space-between;
     
     
+}
+
+navbar {
+    background-color: #000;
 }

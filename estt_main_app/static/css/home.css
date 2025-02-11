@@ -1,16 +1,26 @@
 .welcome-blurb {
+    background-color: black;
+    color: white;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    border: 5px solid blue;
+    /* border: 5px solid blue; */
     text-align: center;
 }
 
 .login-signup-links {    
     text-align: right;    
-    border: 5px solid red;
+    /* border: 5px solid red; */
 }
 
 .login, .signup {
     margin: 5px 15px;
+}
+
+.blurb-links {    
+    padding: 4px;
+}
+
+.home-btn {
+    margin: 0px 150px;
 }
