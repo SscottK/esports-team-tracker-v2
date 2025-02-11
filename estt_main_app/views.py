@@ -25,7 +25,8 @@ def home(request):
 def userDashboard(request):
     teams = Team_user.objects.filter(user=request.user)
     times = Time.objects.filter(user=request.user)
-    user_org = get_object_or_404(Org_user, user=request.user)
+    user_org = Org_user.objects.filter(user=request.user)
+
     return render(request, 'users/dashboard.html', {
         'teams': teams,
         'times': times,
@@ -62,8 +63,9 @@ def team_detail(request, teamID):
     team = get_object_or_404(Team, id=teamID)    
     members = Team_user.objects.filter(team=teamID)
     games = Team_game.objects.filter(team=teamID)
-    user_org = get_object_or_404(Org_user, user=request.user)
-    
+    user_org = Org_user.objects.filter(user=request.user)
+    if not user_org:
+        user_org = ""
     team_user = get_object_or_404(Team_user, team=teamID, user=request.user)
     teams = Team.objects.all()
 

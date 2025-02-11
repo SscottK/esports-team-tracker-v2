@@ -17,7 +17,7 @@
             background-color: #f4f4f4;
         }
     </style> 
-    <title>ESTT Dashboard - {{ user.username}}</title>   
+    <title>ESTT Dashboard - {{ user.username }}</title>   
 {% endblock %}
 
 {% block content %}
@@ -26,8 +26,13 @@
         <h1>This is {{ user.username }}'s Dashboard</h1>
     </div>
     <div class="organization">
-        <h3>Organization: {{ org.org }}</h3>
-        
+        <h3>Organization: 
+            {% if org %}
+                {{ org.org }}
+            {% else %}
+                <a class="btn btn-primary" href="{% url 'new-team' %}">Join Org</a>
+            {% endif %}
+        </h3>
     </div>
     <div class="dashboard-container">
         <div class="dashboard-teams-container mb-4">
@@ -45,19 +50,25 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for team in teams %}
+                        {% if teams %}
+                            {% for team in teams %}
+                                <tr>
+                                    <td>{{ team.team.name }}</td>
+                                    <td>
+                                        {% if team.isCoach %}
+                                            Yes
+                                        {% else %}
+                                            No
+                                        {% endif %}
+                                    </td>
+                                    <td><a href="{% url 'team-details' teamID=team.team.id %}">Details</a></td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
                             <tr>
-                                <td>{{ team.team.name }}</td>
-                                <td>
-                                    {% if team.isCoach %}
-                                        Yes
-                                    {% else %}
-                                        No
-                                    {% endif %}
-                                </td>
-                                <td><a href="{% url 'team-details' teamID=team.team.id %}">Details</a></td>
+                                <td colspan="3" class="text-center">No teams found.</td>
                             </tr>
-                        {% endfor %}
+                        {% endif %}
                     </tbody>
                 </table>
             </div>
@@ -79,13 +90,19 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for time in times %}
-                        <tr>
-                            <td>{{ time.level }}</td>
-                            <td>{{ time.time }}</td> 
-                            <td><a href="{% url 'update-time' time_id=time.id %}">Update</a></td>
-                        </tr>
-                        {% endfor %}
+                        {% if times %}
+                            {% for time in times %}
+                            <tr>
+                                <td>{{ time.level }}</td>
+                                <td>{{ time.time }}</td> 
+                                <td><a href="{% url 'update-time' time_id=time.id %}">Update</a></td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center">No times recorded.</td>
+                            </tr>
+                        {% endif %}
                     </tbody>
                 </table>
             </div>
