@@ -2,7 +2,7 @@
 
 {% load static %}
 {% block head %}
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}" />
     <style>
         table {
@@ -27,10 +27,10 @@
     </div>
     <div class="organization">
         <h3>Organization: 
-            {% if org %}
+            {% if org %}            
                 {{ org.org }}
             {% else %}
-                <a class="btn btn-primary" href="{% url 'new-team' %}">Join Org</a>
+                <a class="btn btn-primary" href="{% url 'join-org' %}">Join Org</a>
             {% endif %}
         </h3>
     </div>

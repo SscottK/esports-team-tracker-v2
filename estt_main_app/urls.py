@@ -27,5 +27,7 @@ urlpatterns = [
     path('api/get-levels/', views.get_levels, name='get-levels'),
     path('new-org/', views.create_org, name='new-org'),
     path('join-codes/<int:org_id>', views.join_codes, name='join-codes'),
-    path('generate-code/<int:org_id>', views.generate_join_code, name='generate-code')
+    path('generate-code/<int:org_id>', views.generate_join_code, name='generate-code'),
+    path('join-org', views.join_org, name='join-org'),
+    path('create-org-user/<str:join_code>', views.create_org_user, name='create-org-user')
     ]

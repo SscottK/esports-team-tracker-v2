@@ -25,7 +25,7 @@ def home(request):
 def userDashboard(request):
     teams = Team_user.objects.filter(user=request.user)
     times = Time.objects.filter(user=request.user)
-    user_org = Org_user.objects.filter(user=request.user)
+    user_org = Org_user.objects.filter(user=request.user).first()
 
     return render(request, 'users/dashboard.html', {
         'teams': teams,
@@ -63,9 +63,11 @@ def team_detail(request, teamID):
     team = get_object_or_404(Team, id=teamID)    
     members = Team_user.objects.filter(team=teamID)
     games = Team_game.objects.filter(team=teamID)
-    user_org = Org_user.objects.filter(user=request.user)
-    if not user_org:
-        user_org = ""
+    user_org = Org_user.objects.filter(user=request.user).first()
+    if user_org:
+        org = Organization.objects.filter(name=user_org.org).first()
+    else:
+        org = ""
     team_user = get_object_or_404(Team_user, team=teamID, user=request.user)
     teams = Team.objects.all()
 
@@ -75,7 +77,7 @@ def team_detail(request, teamID):
         'team': team,
         'team_user': team_user,
         'teams': teams,
-        'org': user_org
+        'org': org
     })
 
 # Add member to team
@@ -408,3 +410,21 @@ def join_codes(request, org_id):
         })
     except Exception as e:
         return JsonResponse({"error": "An unexpected error occurred while getting the join code. Please try again."}, status=500)
+    
+
+
+#join an org form page
+def join_org(request):
+    # try:
+        return render(request, 'organization/join_org.html')
+    # except Exception as e:
+        # return JsonResponse({"error": "An unexpected error occurred while getting the join code. Please try again."}, status=500)
+    
+#create org_user
+def create_org_user(request, join_code):
+    org_join_code = Org_join_code.objects.filter(code=join_code).first()
+    org = get_object_or_404(Organization, name=org_join_code.org)
+    new_org_user = Org_user(user=request.user, org=org)
+    new_org_user.save()
+
+    return redirect('/dashboard/')

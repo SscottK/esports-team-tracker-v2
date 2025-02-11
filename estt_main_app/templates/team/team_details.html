@@ -14,8 +14,11 @@
     <div class="text-center mb-4">
         <h1>Team Details</h1>
         <h3>Name: <span class="font-weight-bold">{{ team.name }}</span></h3>
+        
         {% if team_user.isCoach %}
-        <button class="btn btn-primary"><a href="{% url 'join-codes' org_id=org.id %}">Join Codes</a></button>
+            {% if org %}
+                <button class="btn btn-primary"><a href="{% url 'join-codes' org_id=org.id %}">Join Codes</a></button>
+            {% endif %}
             <a href="/team/{{ team.id }}/add-member" class="btn btn-primary">Add Member</a>
         {% endif %}
     </div>
