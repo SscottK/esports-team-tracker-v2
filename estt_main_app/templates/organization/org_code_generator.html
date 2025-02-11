@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/org_code_generator.css' %}" />
+    <title>ESTT - Org Code Generator</title>
+{% endblock %} 
+{% block content %}
+<div class="code-generator">
+    <div class="generate-button">
+        <button class="btn btn-primary"><a href="{% url 'generate-code' org_id=org.id %}">Generate A Code</a></button>
+    </div>
+    <div class="code-display">
+        <ul>
+        {% for code in codes %}
+            <li>{{ code.code }}</li>
+        {% endfor %}
+        </ul>
+    </div>
+</div>
+
+{% endblock %}

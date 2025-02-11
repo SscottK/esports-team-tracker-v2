@@ -1,17 +1,29 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load custom_filters %}  {# Load your custom filters #}
 {% block head %}
     <title>ESTT - Create Organization</title>
 {% endblock %} 
-{% block content %}
-<h2>Create A New Organization</h2>
-  {% if error_message %}
-    <p style="color: red;">{{ error_message }}</p>
-  {% endif %}
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}    
-    <button type="submit">Create Team</button>
-  </form>
 
+{% block content %}
+<div class="container mt-5">
+    <h2>Create A New Organization</h2>
+    {% if error_message %}
+        <div class="alert alert-danger" role="alert">
+            {{ error_message }}
+        </div>
+    {% endif %}
+    <form method="post" class="mt-4">
+        {% csrf_token %}
+        <div class="form-group">
+            {{ form_one.name.label }}  
+            {{ form_one.name|add_class:"form-control" }}  
+        </div>
+        <div class="form-group">
+            {{ form_two.as_p}}  
+              
+        </div>
+        <button type="submit" class="btn btn-primary">Create Org</button>
+    </form>
+</div>
 {% endblock %}

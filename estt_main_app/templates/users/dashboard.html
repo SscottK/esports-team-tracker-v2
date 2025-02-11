@@ -25,7 +25,10 @@
     <div class="dashboard-head">
         <h1>This is {{ user.username }}'s Dashboard</h1>
     </div>
-    
+    <div class="organization">
+        <h3>Organization: {{ org.org }}</h3>
+        <button class="btn btn-primary"><a href="{% url 'join-codes' org_id=org.id %}">Join Codes</a></button>
+    </div>
     <div class="dashboard-container">
         <div class="dashboard-teams-container mb-4">
             <div class="teams-head d-flex justify-content-between align-items-center">

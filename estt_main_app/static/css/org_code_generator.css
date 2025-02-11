@@ -1,0 +1,26 @@
+.code-generator {
+    display: flex;
+    flex-direction: column;
+    /* border: 3px solid yellow;     */
+    align-items: center;
+    max-width: 50%;
+    margin: auto;
+}
+
+.generate-button  {
+    /* justify-content: center; */
+    /* text-align: center; */
+    /* border: 3px solid blue; */
+    margin: 35px 0px 0px;
+    width: 30%;    
+    
+}
+
+.code-display {
+    /* justify-content: center; */
+    /* text-align: center; */
+    /* border: 3px solid blue; */
+    margin: 10px 0px;
+    width: 30%;    
+    
+}

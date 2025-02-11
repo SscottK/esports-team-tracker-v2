@@ -48,7 +48,7 @@
 
 
 
-.dashboard-head {
+.dashboard-head, .organization {
     display: flex;
     justify-content: center;
     align-items: center;

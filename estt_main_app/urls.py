@@ -25,5 +25,7 @@ urlpatterns = [
     path('search-users/', views.search_users, name='search-users'),
     path('api/new-time-get-games/', views.new_time_get_games, name='new-time-get-games'),
     path('api/get-levels/', views.get_levels, name='get-levels'),
-    path('new-org/', views.CreateOrganization.as_view(), name='new-org')
+    path('new-org/', views.create_org, name='new-org'),
+    path('join-codes/<int:org_id>', views.join_codes, name='join-codes'),
+    path('generate-code/<int:org_id>', views.generate_join_code, name='generate-code')
     ]

@@ -3,12 +3,14 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from .forms import CustomUserCreationForm
 from django.urls import reverse_lazy
-from .models import Team_user, Team, Team_game, Game, Level, Time, Organization
+from .models import Team_user, Team, Team_game, Game, Level, Time, Organization, Org_user, Org_join_code
 from django.contrib.auth.models import User
 from django.views.generic.edit import CreateView, UpdateView
-from .forms import TeamUserForm, EditProfileForm, NewTeamForm, AddTeamUserOnTeamCreationForm, TeamGameForm, TimeCreationForm, TimeUpdateForm, TargetTimesCreationForm, NewOrganizationForm
+from .forms import TeamUserForm, EditProfileForm, NewTeamForm, AddTeamUserOnTeamCreationForm, TeamGameForm, TimeCreationForm, TimeUpdateForm, TargetTimesCreationForm, NewOrganizationForm, AddOrgUserOnOrgCreationForm, CreateOrgJoinCode
 from django.http import HttpResponse
 from django.http import JsonResponse
+import random
+import string
 
 
 
@@ -23,7 +25,7 @@ def home(request):
 def userDashboard(request):
     teams = Team_user.objects.filter(user=request.user)
     times = Time.objects.filter(user=request.user)
-    user_org = get_object_or_404(Organization, user=request.user)
+    user_org = get_object_or_404(Org_user, user=request.user)
     return render(request, 'users/dashboard.html', {
         'teams': teams,
         'times': times,
@@ -336,7 +338,70 @@ def get_levels(request):
 
 
 #create new organization
-class CreateOrganization(CreateView):
-    model = Organization
-    form_class = NewOrganizationForm
-    template_name = 'organization/new_org.html'
+def create_org(request):
+    # try:
+        if request.method == 'POST':
+            form_one = NewOrganizationForm(request.POST)
+            form_two = AddOrgUserOnOrgCreationForm(request.POST)
+            if form_one.is_valid() and form_two.is_valid():
+                new_org = form_one.save(commit=False)
+                new_org.save()            
+                org_user = form_two.save(commit=False)
+                org_user.org = new_org
+                org_user.user = request.user
+                
+                org_user.save()
+                return redirect('dashboard')
+            else:
+                return render(request, 'organization/new_org.html', {
+                    'form_one': form_one,
+                    'form_two': form_two,
+                    'error_message': 'Please correct the errors below.'
+                })
+        else:
+            form_one = NewOrganizationForm()
+            form_two = AddOrgUserOnOrgCreationForm()
+        
+        return render(request, 'organization/new_org.html', {
+            'form_one': form_one,
+            'form_two': form_two,
+        })
+    # except Exception as e:
+        # return JsonResponse({"error": "An unexpected error occurred while creating the organization. Please try again."}, status=500)
+
+
+#generate join code
+def generate_join_code(request, org_id):
+    # try:
+        def generate_random_code(length=8):
+            characters = string.ascii_letters + string.digits
+            random_code = ''.join(random.choice(characters) for _ in range(length))
+            return random_code
+        
+        org = get_object_or_404(Organization, id=org_id)
+        codes = Org_join_code.objects.filter(org=org.id)
+        new_join_code = Org_join_code(code=generate_random_code(8), org=org)
+        
+        new_join_code.save()
+        return render(request, 'organization/org_code_generator.html', {
+            'codes': codes,
+            'org': org
+
+        })
+    # except Exception as e:
+        # return JsonResponse({"error": "An unexpected error occurred while generating the join code. Please try again."}, status=500)
+    
+
+
+#join code index
+def join_codes(request, org_id):
+    try:        
+        org = get_object_or_404(Organization, id=org_id)
+        codes = Org_join_code.objects.filter(org=org.id)
+        return render(request, 'organization/org_code_generator.html', {
+            'codes': codes,
+            'org': org
+
+        })
+    except Exception as e:
+        return JsonResponse({"error": "An unexpected error occurred while getting the join code. Please try again."}, status=500)

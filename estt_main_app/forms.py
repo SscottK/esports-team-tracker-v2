@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Team_user, Team, Team_game, Time, Target_times, Level, Organization
+from .models import Team_user, Team, Team_game, Time, Target_times, Level, Organization, Org_user, Org_join_code
 from dal import autocomplete
 
 
@@ -105,3 +105,14 @@ class NewOrganizationForm(forms.ModelForm):
     class Meta:
         model = Organization
         fields = ['name']
+
+
+class AddOrgUserOnOrgCreationForm(forms.ModelForm):
+    class Meta:
+        model = Org_user
+        exclude = ['user', 'org']
+
+class CreateOrgJoinCode(forms.ModelForm):
+    class Meta:
+        model = Org_join_code
+        exclude = ['code', 'org']

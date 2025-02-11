@@ -151,3 +151,13 @@ class Org_user(models.Model):
     def __str__(self):
         rtrn_strng = self.user.username + ", " + self.org.name
         return rtrn_strng
+
+
+#org join code
+class Org_join_code(models.Model):
+    
+    #the code randomly generated to be added to an org
+    code = models.CharField(max_length=20)
+
+    #the org that code if for
+    org = models.ForeignKey(Organization, on_delete=models.CASCADE)
