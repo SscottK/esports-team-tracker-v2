@@ -3,29 +3,16 @@
 {% load static %}
 {% block head %}
     
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}" />
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 12px; /* Increased padding for better spacing */
-            text-align: left;
-        }
-        th {
-            background-color: #f4f4f4;
-        }
-    </style> 
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}" />    
     <title>ESTT Dashboard - {{ user.username }}</title>   
 {% endblock %}
 
 {% block content %}
 <div class="container">
-    <div class="dashboard-head">
+    <div class="dashboard-head text-white">
         <h1>This is {{ user.username }}'s Dashboard</h1>
     </div>
-    <div class="organization">
+    <div class="organization text-white">
         <h3>Organization: 
             {% if org %}            
                 {{ org.org }}
@@ -36,20 +23,20 @@
     </div>
     <div class="dashboard-container">
         <div class="dashboard-teams-container mb-4">
-            <div class="teams-head d-flex justify-content-between align-items-center">
+            <div class="teams-head d-flex justify-content-between align-items-center text-white">
                 <h3>My Teams</h3>
                 <a class="btn btn-primary" href="{% url 'new-team' %}">New Team</a>
             </div>            
             <div class="table-responsive"> <!-- Added responsive wrapper -->
                 <table class="table table-bordered mt-2">
-                    <thead>
+                    <thead class="team-thead text-white">
                         <tr>
-                            <th>Team</th>
+                            <th >Team</th>
                             <th>Team Coach</th>
                             <th>Team Link</th>                
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="text-white">
                         {% if teams %}
                             {% for team in teams %}
                                 <tr>
@@ -75,21 +62,21 @@
         </div>
         
         <div class="dashboard-times-container">
-            <div class="times-head d-flex justify-content-between align-items-center">
+            <div class="times-head d-flex justify-content-between align-items-center text-white">
                 <h3>My Times</h3>
                 <a class="btn btn-primary" href="{% url 'add-time' %}">New Time</a>
             </div>
             
             <div class="table-responsive"> <!-- Added responsive wrapper -->
                 <table class="table table-bordered mt-2">
-                    <thead>
+                    <thead class="times-thead text-white">
                         <tr>
                             <th>Level</th>
                             <th>Time</th>
                             <th>Update Link</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="text-white">
                         {% if times %}
                             {% for time in times %}
                             <tr>

@@ -415,16 +415,19 @@ def join_codes(request, org_id):
 
 #join an org form page
 def join_org(request):
-    # try:
+    try:
         return render(request, 'organization/join_org.html')
-    # except Exception as e:
-        # return JsonResponse({"error": "An unexpected error occurred while getting the join code. Please try again."}, status=500)
+    except Exception as e:
+        return JsonResponse({"error": "An unexpected error occurred while getting the join code. Please try again."}, status=500)
     
 #create org_user
 def create_org_user(request, join_code):
-    org_join_code = Org_join_code.objects.filter(code=join_code).first()
-    org = get_object_or_404(Organization, name=org_join_code.org)
-    new_org_user = Org_user(user=request.user, org=org)
-    new_org_user.save()
+    try:
+        org_join_code = Org_join_code.objects.filter(code=join_code).first()
+        org = get_object_or_404(Organization, name=org_join_code.org)
+        new_org_user = Org_user(user=request.user, org=org)
+        new_org_user.save()
 
-    return redirect('/dashboard/')
+        return redirect('/dashboard/')
+    except Exception as e:
+        return JsonResponse({"error": "An unexpected error occurred while getting the join code. Please try again."}, status=500)

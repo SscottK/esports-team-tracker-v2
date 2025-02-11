@@ -60,3 +60,9 @@
     align-items: center;
     /* border: 5px solid blue; */
 }
+
+
+
+.team-thead, .times-thead {
+    background-color: grey;
+}
