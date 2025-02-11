@@ -3,7 +3,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from .forms import CustomUserCreationForm
 from django.urls import reverse_lazy
-from .models import Team_user, Team, Team_game, Game, Level, Time, Organization, Org_user, Org_join_code
+from .models import Team_user, Team, Team_game, Game, Level, Time, Organization, Org_user, Org_join_code, Org_team
 from django.contrib.auth.models import User
 from django.views.generic.edit import CreateView, UpdateView
 from .forms import TeamUserForm, EditProfileForm, NewTeamForm, AddTeamUserOnTeamCreationForm, TeamGameForm, TimeCreationForm, TimeUpdateForm, TargetTimesCreationForm, NewOrganizationForm, AddOrgUserOnOrgCreationForm, CreateOrgJoinCode
@@ -62,8 +62,8 @@ def team_detail(request, teamID):
     team = get_object_or_404(Team, id=teamID)    
     members = Team_user.objects.filter(team=teamID)
     games = Team_game.objects.filter(team=teamID)
+    user_org = get_object_or_404(Org_user, user=request.user)
     
-    # Ensure the user is a member of the team
     team_user = get_object_or_404(Team_user, team=teamID, user=request.user)
     teams = Team.objects.all()
 
@@ -72,7 +72,8 @@ def team_detail(request, teamID):
         'games': games,
         'team': team,
         'team_user': team_user,
-        'teams': teams
+        'teams': teams,
+        'org': user_org
     })
 
 # Add member to team

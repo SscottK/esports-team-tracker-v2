@@ -117,6 +117,8 @@ class Organization(models.Model):
     #Org Name
     name = models.CharField(max_length=50)
 
+    
+
     #what it will return when being printed
     def __str__(self):
         return self.name

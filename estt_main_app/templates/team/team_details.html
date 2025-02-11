@@ -15,6 +15,7 @@
         <h1>Team Details</h1>
         <h3>Name: <span class="font-weight-bold">{{ team.name }}</span></h3>
         {% if team_user.isCoach %}
+        <button class="btn btn-primary"><a href="{% url 'join-codes' org_id=org.id %}">Join Codes</a></button>
             <a href="/team/{{ team.id }}/add-member" class="btn btn-primary">Add Member</a>
         {% endif %}
     </div>
@@ -24,7 +25,9 @@
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h2 class="mb-0">Games</h2>
-                <a href="/add-game/{{ team.id }}/" class="btn btn-success">Add Game</a>
+                {% if team_user.isCoach %}
+                    <a href="/add-game/{{ team.id }}/" class="btn btn-success">Add Game</a>
+                    {% endif %}
             </div>
             <div class="card-body">
                 <ul class="list-group">
