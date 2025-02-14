@@ -3,14 +3,14 @@
     color: white;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    /* border: 5px solid blue; */
+    justify-content: center;    
     text-align: center;
+    
 }
 
 .login-signup-links {    
     text-align: right;    
-    /* border: 5px solid red; */
+    
 }
 
 .login, .signup {
@@ -23,4 +23,17 @@
 
 .home-btn {
     margin: 0px 150px;
+}
+
+.logo-div {
+    display: flex;
+    margin: auto;    
+    justify-content: center;
+    padding: 20px 0 30px;
+}
+
+.logo-image {
+    
+    width: 400px;
+    height: auto;
 }
