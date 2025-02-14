@@ -430,4 +430,4 @@ def create_org_user(request, join_code):
 
         return redirect('/dashboard/')
     except Exception as e:
-        return JsonResponse({"error": "An unexpected error occurred while getting the join code. Please try again."}, status=500)
+        return JsonResponse({"error": "An unexpected error occurred while  trying to join the organization. Please try again."}, status=500)
