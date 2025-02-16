@@ -1,181 +1,243 @@
-{% extends "base.html" %}
-{% load static %}
-{% block head %}
-    <link rel="stylesheet" href="{% static 'css/team_detail.css' %}" />
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
-    <title>ESTT - Team Details</title>
- 
-{% endblock %}
+{% extends "base.html" %} {% load static %} {% block head %}
+<link rel="stylesheet" href="{% static 'css/team_detail.css' %}" />
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+  integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+  crossorigin="anonymous"
+/>
+<script
+  defer
+  src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+></script>
 
-{% block content %}
-<div class="container mt-4" x-data="gameSelection()" x-init="loadGames({{ team.id }})"> 
-    <div class="text-center mb-4">
-        <h1>Team Details</h1>
-        <h3>Name: <span class="font-weight-bold">{{ team.name }}</span></h3>
-        
-        {% if team_user.isCoach %}
-            {% if org %}
-                <a class="btn btn-primary" href="{% url 'join-codes' org_id=org.id %}">Join Codes</a>
-            {% endif %}
-            
-        {% endif %}
+<title>ESTT - Team Details</title>
+{% endblock %} {% block content %}
+<div
+  class="container mt-4 text-white"
+  x-data="teamDetails()"
+  x-init="loadGames({{ team.id }})"
+>
+  <div class="text-center mb-4">
+    <h1>Team Details</h1>
+    <h3>Name: <span class="font-weight-bold">{{ team.name }}</span></h3>
+
+    {% if team_user.isCoach %} {% if org %}
+    <a class="btn btn-primary" href="{% url 'join-codes' org_id=org.id %}"
+      >Join Codes</a
+    >
+    {% endif %} {% endif %}
+  </div>
+
+  <div class="row">
+    <div class="col-md-3">
+      <!-- Side Menu -->
+      <div class="list-group">
+        <button
+          class="list-group-item list-group-item-action"
+          :class="{ active: activeSection === 'games' }"
+          @click="activeSection = 'games'"
+        >
+          Games
+        </button>
+        <button
+          class="list-group-item list-group-item-action"
+          :class="{ active: activeSection === 'coaches' }"
+          @click="activeSection = 'coaches'"
+        >
+          Coaches
+        </button>
+        <button
+          class="list-group-item list-group-item-action"
+          :class="{ active: activeSection === 'members' }"
+          @click="activeSection = 'members'"
+        >
+          Members
+        </button>
+      </div>
     </div>
 
-    <div class="row">
-      <div class="col-md-4">
+    <div class="col-md-9">
+      <!-- Content Area -->
+
+      <div x-show="activeSection === 'games'" class="mt-4">
+        <!-- Added mb-4 -->
         <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h2 class="mb-0">Games</h2>
-                {% if team_user.isCoach %}
-                    <a href="/add-game/{{ team.id }}/" class="btn btn-success">Add Game</a>
-                    {% endif %}
-            </div>
-            <div class="card-body">
-                <ul class="list-group">
-                    <template x-for="game in games" :key="game.game_id">
-                        <li class="list-group-item">
-                            <button @click="loadTable(game.game_id)" class="btn btn-link" x-text="game.game__game"></button>
-                        </li>
-                    </template>
-                    </ul>
-                </div>
-            </div>
+          <div
+            class="card-header d-flex justify-content-between align-items-center px-3"
+          >
+            <h2 class="mb-0">Games</h2>
+            {% if team_user.isCoach %}
+            <a href="/add-game/{{ team.id }}/" class="btn btn-success"
+              >Add Game</a
+            >
+            {% endif %}
+          </div>
+          <div class="card-body">
+            <ul class="list-group">
+              <template x-for="game in games" :key="game.game_id">
+                <li class="list-group-item d-flex justify-content-between">
+                  <button
+                    @click="loadTable(game.game_id)"
+                    class="btn btn-link"
+                    x-text="game.game__game"
+                  ></button>
+                </li>
+              </template>
+            </ul>
+          </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h2>Coaches</h2>
-                </div>
-                <div class="card-body">
-                    <ul class="list-group">
-                        {% for member in members %}
-                            {% if member.isCoach %}
-                                <li class="list-group-item">{{ member.user }}</li>
-                            {% endif %}
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h2>Members</h2>
-                    <a href="/team/{{ team.id }}/add-member" class="btn btn-primary">Add Member</a>
-                </div>
-                <div class="card-body">
-                    <ul class="list-group">
-                        {% for member in members %}
-                            {% if not member.isCoach %}
-                                <li class="list-group-item">{{ member.user }}</li>
-                            {% endif %}
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="game-table-container">
-        <template x-if="tableData">
+        <!-- Times Table (Initially Hidden) -->
+        <div class="game-table-container mt-3" x-show="tableData">
+          <template x-if="tableData">
             <div x-show="tableData.levels.length > 0" class="game-table">
-                <h2 x-text="tableData.game"></h2>
-                <div x-data="{ id: null }" x-init="fetchId().then(result => id = result)">
-                    <a :href="id ? `/new-target-times/${tableData.team_id}/${tableData.game_id}/` : '#'" class="btn btn-warning">
-                        Add Target Times
-                    </a>
-                </div>
+              <h2 x-text="tableData.game"></h2>
+              <div
+                x-data="{ id: null }"
+                x-init="fetchId().then(result => id = result)"
+              >
+                <a
+                  :href="
+                    id
+                      ? `/new-target-times/${tableData.team_id}/${tableData.game_id}/`
+                      : '#'
+                  "
+                  class="btn btn-warning"
+                >
+                  Add Target Times
+                </a>
+              </div>
 
-                <table class="table table-bordered mt-3">
-                    <thead>
-                        <tr>
-                            <th>Level</th>
-                            <template x-for="user in tableData.users" :key="user.user">
-                                <th x-text="user.user__username"></th>
-                            </template>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template x-for="level in tableData.levels" :key="level.id">
-                            <tr>
-                                <td x-text="level.level_name"></td>
-                                <template x-for="user in tableData.users" :key="user.user">
-                                    <td x-text="getTime(level.id, user.user)"></td>
-                                </template>
-                            </tr>
+              <div class="table-responsive">
+                <table class="table table-bordered mt-3" style="width: auto;">
+                  <thead>
+                    <tr>
+                      <th>Level</th>
+                      <template x-for="user in tableData.users" :key="user.user">
+                        <th x-text="user.user__username"></th>
+                      </template>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <template x-for="level in tableData.levels" :key="level.id">
+                      <tr>
+                        <td x-text="level.level_name"></td>
+                        <template x-for="user in tableData.users" :key="user.user">
+                          <td x-text="getTime(level.id, user.user)"></td>
                         </template>
-                    </tbody>
+                      </tr>
+                    </template>
+                  </tbody>
                 </table>
+              </div>
             </div>
-        </template>
+          </template>
 
-        <template x-if="!tableData.levels.length">
+          <template x-if="!tableData.levels.length">
             <div class="alert alert-warning">
-                <p>No table data for this game - Please select another game</p>
+              <p>No table data for this game - Please select another game</p>
             </div>
-        </template>
+          </template>
+        </div>
+      </div>
+
+      <div x-show="activeSection === 'coaches'" class="mt-4">
+        <!-- Added mb-4 -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h2>Coaches</h2>
+          </div>
+          <div class="card-body">
+            <ul class="list-group">
+              {% for member in members %} {% if member.isCoach %}
+              <li class="list-group-item">{{ member.user }}</li>
+              {% endif %} {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div x-show="activeSection === 'members'" class="mt-4">
+        <!-- Added mb-4 -->
+        <div class="card mb-4">
+          <div
+            class="card-header d-flex justify-content-between align-items-center"
+          >
+            <h2>Members</h2>
+            <a href="/team/{{ team.id }}/add-member" class="btn btn-primary btn-sm"
+              >Add Member</a
+            >
+          </div>
+          <div class="card-body">
+            <ul class="list-group">
+              {% for member in members %} {% if not member.isCoach %}
+              <li class="list-group-item">{{ member.user }}</li>
+              {% endif %} {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
 
 <script>
-  function gameSelection() {
-      return {
-        games: [],
-        tableData: { users: [], levels: [], times: {}},
-        errorMessage: '',
-  
-        async loadGames(teamId) {
-          if (!teamId) {
-            this.errorMessage = "Team ID is missing.";
-            return;
-          }
-          try {
-            const response = await fetch(`/api/games/?team_id=${teamId}`);
-            if (!response.ok) {
-              const errorData = await response.json();
-              throw new Error(errorData.error || "Failed to fetch games.");
-            }
-            this.games = await response.json();
-            this.errorMessage = '';
-          } catch (error) {
-            this.errorMessage = error.message;
-          }
-        },
-  
-        async loadTable(gameId) {
-          if (!gameId) {
-            this.errorMessage = "Please select a game.";
-            return;
-          }
-          try {
-            const response = await fetch(`/api/table-data/?game_id=${gameId}`);
-            if (!response.ok) {
-              const errorData = await response.json();
-              throw new Error(errorData.error || "Failed to fetch table data.");
-            }
-            this.tableData = await response.json();
-            this.tableData.game = `Tracked Data for ${this.tableData.game}`;
-            this.errorMessage = '';
-          } catch (error) {
-            this.errorMessage = error.message;
-          }
-        },
-        async fetchId() {
-          return new Promise((resolve) => {
-            setTimeout(() => {
-              resolve(42); // Replace this with your real logic
-            }, 1000);
-          });
-        },
-  
-        getTime(levelId, userId) {
-          return this.tableData.times[`${levelId}-${userId}`] || '-';
+  function teamDetails() {
+    return {
+      activeSection: "games",
+      games: [],
+      tableData: null,
+      errorMessage: "",
+
+      async loadGames(teamId) {
+        if (!teamId) {
+          this.errorMessage = "Team ID is missing.";
+          return;
         }
-      };
+        try {
+          const response = await fetch(`/api/games/?team_id=${teamId}`);
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || "Failed to fetch games.");
+          }
+          this.games = await response.json();
+          this.errorMessage = "";
+        } catch (error) {
+          this.errorMessage = error.message;
+        }
+      },
+
+      async loadTable(gameId) {
+        if (!gameId) {
+          this.errorMessage = "Please select a game.";
+          return;
+        }
+        try {
+          const response = await fetch(`/api/table-data/?game_id=${gameId}`);
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || "Failed to fetch table data.");
+          }
+          this.tableData = await response.json();
+          this.tableData.game = `Tracked Data for ${this.tableData.game}`;
+          this.errorMessage = "";
+        } catch (error) {
+          this.errorMessage = error.message;
+        }
+      },
+      async fetchId() {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve(42); // Replace this with your real logic
+          }, 1000);
+        });
+      },
+
+      getTime(levelId, userId) {
+        return this.tableData.times[`${levelId}-${userId}`] || "-";
+      },
+    };
   }
 </script>
 {% endblock %}

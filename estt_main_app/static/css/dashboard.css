@@ -37,11 +37,11 @@
 }
 
 .dashboard-container {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-    font-size: 20px;
-    /* border: 3px solid purple; */
+    /* display: flex; */
+    /* flex-direction: row; */
+    /* justify-content: space-evenly; */
+    /* font-size: 20px; */
+    border: 3px solid purple;
     
     
 }
@@ -66,3 +66,25 @@
 .team-thead, .times-thead {
     background-color: grey;
 }
+
+#table-container {
+    display: none; /* Hide by default */
+  }
+  
+  @media (max-width: 720px) {
+    #games-card {
+      margin-bottom: 0; /* Remove bottom margin from Games card */
+    }
+  
+    #table-container {
+      display: block; /* Show below Games card on small screens */
+      margin-top: 1rem; /* Add some space above the table */
+    }
+  }
+  
+  @media (min-width: 721px) {
+    #table-container {
+      display: block; /* Show in original position on larger screens */
+    }
+  }
+  

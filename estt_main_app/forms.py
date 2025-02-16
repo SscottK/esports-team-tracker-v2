@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import Team_user, Team, Team_game, Time, Target_times, Level, Organization, Org_user, Org_join_code
-from dal import autocomplete
+
 
 
 

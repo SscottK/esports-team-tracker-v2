@@ -10,36 +10,36 @@ a {
     padding: 0 15px;
 }
 
-.nav-container {
+/* .nav-container {
     
     
     border: 5px solid red
-}
+} */
 
-.user-action-links {
+/* .user-action-links {
     display: flex;
     
     justify-content: right;
     border: 3px solid green;
     
     
-}
+} */
 
-.dashboard-link {
+/* .dashboard-link {
     display: flex;
     
     border: 3px solid purple;
-}
+} */
 
 
-.nav-links {
+/* .nav-links {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     
     
-}
+} */
 
-navbar {
+/* navbar {
     background-color: #000;
-}
+} */

@@ -243,6 +243,10 @@ def create_team_game(request, team_id):
 def create_new_time(request):
     try:
         if request.method == 'POST':
+            level = request.POST.get('level')
+            time_exists = Time.objects.filter(level=level, user=request.user).first()
+            if time_exists:
+                return JsonResponse({'success': False, 'errors': "You already have a time for that level. Please update the existing time entry."})
             game_id = request.POST.get('game')
             form = TimeCreationForm(request.POST, game_id=game_id)
             
@@ -377,24 +381,24 @@ def create_org(request):
 
 #generate join code
 def generate_join_code(request, org_id):
-    # try:
+    try:        
         def generate_random_code(length=8):
             characters = string.ascii_letters + string.digits
             random_code = ''.join(random.choice(characters) for _ in range(length))
             return random_code
         
         org = get_object_or_404(Organization, id=org_id)
-        codes = Org_join_code.objects.filter(org=org.id)
+        code = Org_join_code.objects.filter(org=org.id).first()
         new_join_code = Org_join_code(code=generate_random_code(8), org=org)
         
         new_join_code.save()
         return render(request, 'organization/org_code_generator.html', {
-            'codes': codes,
+            'code': code,
             'org': org
 
         })
-    # except Exception as e:
-        # return JsonResponse({"error": "An unexpected error occurred while generating the join code. Please try again."}, status=500)
+    except Exception as e:
+        return JsonResponse({"error": "An unexpected error occurred while generating the join code. Please try again."}, status=500)
     
 
 
@@ -402,9 +406,9 @@ def generate_join_code(request, org_id):
 def join_codes(request, org_id):
     try:        
         org = get_object_or_404(Organization, id=org_id)
-        codes = Org_join_code.objects.filter(org=org.id)
+        code = Org_join_code.objects.filter(org=org.id).first
         return render(request, 'organization/org_code_generator.html', {
-            'codes': codes,
+            'code': code,
             'org': org
 
         })

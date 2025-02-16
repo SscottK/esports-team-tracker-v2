@@ -51,3 +51,18 @@
 .game-table-container, .game-table {
     justify-items: center;
 }
+
+/* .list-group {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 1rem;
+} */
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.table {
+  width: auto;
+}
