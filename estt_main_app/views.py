@@ -82,10 +82,10 @@ def team_detail(request, teamID):
 
 # Add member to team
 @login_required
-def add_team_member(request, teamID):
+def add_team_member(request, teamID, org_id):
     team_user = get_object_or_404(Team_user, team=teamID, user=request.user)
     team = get_object_or_404(Team, id=teamID)
-
+    org = get_object_or_404(Organization, id=org_id)
     if not team_user.isCoach:
         return HttpResponse('You are not allowed to do that', status=403)
     
@@ -105,13 +105,29 @@ def add_team_member(request, teamID):
     return render(request, 'team/add_team_user.html', {
         'form': form,
         'team': team,
+        'org': org,
     })
 
 # Autocomplete for user search to add user to team
 @login_required
 def search_users(request):
     query = request.GET.get('q', '')
-    users = User.objects.filter(username__icontains=query)[:10]
+    organization_id = request.GET.get('organization_id')
+
+    if not organization_id:
+        return JsonResponse([], safe=False)
+
+    try:
+        organization = Organization.objects.get(pk=organization_id)
+    except Organization.DoesNotExist:
+        return JsonResponse([], safe=False)
+
+    # Filter users who are members of the organization
+    org_users = Org_user.objects.filter(org=organization, user__username__icontains=query)[:10]
+
+    # Extract the user objects from Org_user instances
+    users = [org_user.user for org_user in org_users]
+
     results = [{'id': user.id, 'username': user.username} for user in users]
     return JsonResponse(results, safe=False)
 
@@ -406,7 +422,7 @@ def generate_join_code(request, org_id):
 def join_codes(request, org_id):
     try:        
         org = get_object_or_404(Organization, id=org_id)
-        code = Org_join_code.objects.filter(org=org.id).first
+        code = Org_join_code.objects.filter(org=org.id).first()
         return render(request, 'organization/org_code_generator.html', {
             'code': code,
             'org': org
@@ -424,10 +440,11 @@ def join_org(request):
     except Exception as e:
         return JsonResponse({"error": "An unexpected error occurred while getting the join code. Please try again."}, status=500)
     
-#create org_user
+#create org_user for user to join an org
 def create_org_user(request, join_code):
     try:
         org_join_code = Org_join_code.objects.filter(code=join_code).first()
+        
         org = get_object_or_404(Organization, name=org_join_code.org)
         new_org_user = Org_user(user=request.user, org=org)
         new_org_user.save()

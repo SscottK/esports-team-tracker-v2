@@ -17,40 +17,46 @@
 
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const searchInput = document.getElementById('user-search');
-        const userIdInput = document.getElementById('user-id');
-        const resultsDropdown = document.createElement('div');
-        resultsDropdown.style.position = 'absolute';
-        resultsDropdown.style.border = '1px solid #ccc';
-        resultsDropdown.style.backgroundColor = '#fff';
-        resultsDropdown.style.zIndex = '1000';
-        searchInput.parentNode.appendChild(resultsDropdown);
-
-        searchInput.addEventListener('input', async () => {
-            const query = searchInput.value;
-            if (query.length < 1) {
-                resultsDropdown.innerHTML = '';
-                return;
-            }
-
-            const response = await fetch(`/search-users/?q=${query}`);
-            const users = await response.json();
-
-            resultsDropdown.innerHTML = '';
-            users.forEach(user => {
-                const option = document.createElement('div');
-                option.textContent = user.username;
-                option.style.cursor = 'pointer';
-                option.addEventListener('click', () => {
-                    searchInput.value = user.username;
-                    userIdInput.value = user.id
-                    resultsDropdown.innerHTML = '';
-                });
-                resultsDropdown.appendChild(option);
-            });
+    document.addEventListener("DOMContentLoaded", () => {
+      const searchInput = document.getElementById("user-search");
+      const userIdInput = document.getElementById("user-id");
+      const resultsDropdown = document.createElement("div");
+      resultsDropdown.style.position = "absolute";
+      resultsDropdown.style.border = "1px solid #ccc";
+      resultsDropdown.style.backgroundColor = "#fff";
+      resultsDropdown.style.zIndex = "1000";
+      searchInput.parentNode.appendChild(resultsDropdown);
+  
+      // Get the organization ID from the template context or a data attribute
+      const organizationId = "{{ org.id }}"; // Example: Assuming you pass organization.id from the view
+  
+      searchInput.addEventListener("input", async () => {
+        const query = searchInput.value;
+        if (query.length < 1) {
+          resultsDropdown.innerHTML = "";
+          return;
+        }
+  
+        // Include the organization ID in the fetch request
+        const response = await fetch(
+          `/search-users/?q=${query}&organization_id=${organizationId}`
+        );
+        const users = await response.json();
+  
+        resultsDropdown.innerHTML = "";
+        users.forEach((user) => {
+          const option = document.createElement("div");
+          option.textContent = user.username;
+          option.style.cursor = "pointer";
+          option.addEventListener("click", () => {
+            searchInput.value = user.username;
+            userIdInput.value = user.id;
+            resultsDropdown.innerHTML = "";
+          });
+          resultsDropdown.appendChild(option);
         });
+      });
     });
-</script>
+  </script>
 
 {% endblock %}
