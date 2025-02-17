@@ -70,9 +70,13 @@ def team_detail(request, teamID):
         org = ""
     team_user = get_object_or_404(Team_user, team=teamID, user=request.user)
     teams = Team.objects.all()
+    active_members = []
+    for member in members:
+        if member.user.is_active:
+            active_members.append(member)
 
     return render(request, 'team/team_details.html', {
-        'members': members,
+        'members': active_members,
         'games': games,
         'team': team,
         'team_user': team_user,
@@ -205,26 +209,33 @@ def get_games(request):
 def get_table_data(request):
     try:
         game_id = request.GET.get('game_id')
-        
+
         if not game_id:
             return JsonResponse({"error": "Game is required"}, status=400)
-        
+
         team_game = get_object_or_404(Team_game, game=game_id)
         game = get_object_or_404(Game, id=game_id)
 
         team_members = Team_user.objects.filter(team=team_game.team).values('user', 'user__username')
+        print(team_members)
+        active_members = []
+        for member in team_members:
+            user = get_object_or_404(User, id=member['user'])
+            if user.is_active:
+                active_members.append(member)
+        print(active_members)
         levels = Level.objects.filter(game=game).values('id', 'level_name')
         times = Time.objects.filter(level__game=game).values('level_id', 'user_id', 'time')
-        
+
         time_dict = {f"{time['level_id']}-{time['user_id']}": time['time'] for time in times}
-        
+
         return JsonResponse({
-            'users': list(team_members.filter(isCoach=False)),
+            'users': list(active_members),
             'levels': list(levels),
             'times': time_dict,
             'game': str(game),
             'game_id': game_id,
-            'team_id': team_game.team.id            
+            'team_id': team_game.team.id
         })
     except Exception as e:
         return JsonResponse({"error": f"An unexpected error occurred: {str(e)}"}, status=500)
@@ -459,3 +470,23 @@ def create_org_user(request, join_code):
         return redirect('/dashboard/')
     except Exception as e:
         return JsonResponse({"error": "An unexpected error occurred while  trying to join the organization. Please try again."}, status=500)
+    
+
+# Deactivate account
+@login_required
+def deactivate_account(request):
+    
+    if request.method == 'POST':
+        # Mark the user as inactive
+        user = request.user
+        user.is_active = False
+        user.save()
+
+        # Log the user out after deactivating the account
+        from django.contrib.auth import logout
+        logout(request)
+        return redirect('goodbye')  
+    return render(request, 'users/deactivate_confirm.html')
+
+def goodbye_page(request):
+    return render(request, 'users/goodbye.html')

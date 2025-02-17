@@ -12,6 +12,9 @@
     <div class="form-group">{{ form.as_p }}</div>
     <button type="submit" class="btn btn-primary">Save Changes</button>
   </form>
+  <form method="get" action="{% url 'deactivate_account' %}">
+    <button type="submit" class="btn btn-danger">Deactivate Account</button>
+  </form>
   <div>
     <a href="{% url 'dashboard' %}" class="btn btn-warning">Cancel</a>
   </div>

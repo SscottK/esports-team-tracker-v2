@@ -29,5 +29,7 @@ urlpatterns = [
     path('join-codes/<int:org_id>', views.join_codes, name='join-codes'),
     path('generate-code/<int:org_id>', views.generate_join_code, name='generate-code'),
     path('join-org', views.join_org, name='join-org'),
-    path('create-org-user/<str:join_code>', views.create_org_user, name='create-org-user')
+    path('create-org-user/<str:join_code>', views.create_org_user, name='create-org-user'),
+    path('deactivate/', views.deactivate_account, name='deactivate_account'),
+    path('goodbye/', views.goodbye_page, name='goodbye'),
     ]

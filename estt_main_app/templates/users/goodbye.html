@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% block head %}
+{% endblock %} 
+{% block content %}
+<div class="container text-white">
+<h2>Goodbye, {{ user.username }}</h2>
+<p>Thanks for using <strong>E-sports Team Tracker</strong>. We're sorry to see you go.</p>
+
+<a href="{% url 'home' %}" class="btn btn-primary">Return to Home</a>
+</div>
+{% endblock %}

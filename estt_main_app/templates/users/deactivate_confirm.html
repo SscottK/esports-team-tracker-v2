@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% block head %}
+{% endblock %} 
+{% block content %}
+<div class="container text-white">
+<h2>Deactivate Account</h2>
+<p>Are you sure you want to deactivate your account? You will no longer be able to log in unless an admin reactivates it.</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Yes, Deactivate My Account</button>
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary">Cancel</a>
+</form>
+</div>
+{% endblock %}
