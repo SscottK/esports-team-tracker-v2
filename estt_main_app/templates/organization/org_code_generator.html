@@ -1,30 +1,23 @@
-{% extends 'base.html' %}
-{% load static %}
-{% block head %}
-<link
-  rel="stylesheet"
-  href="{% static 'css/org_code_generator.css' %}"
-/>
-
+{% extends 'base.html' %} {% load static %} {% block head %}
+<link rel="stylesheet" href="{% static 'css/org_code_generator.css' %}" />
 <title>ESTT - Org Code Generator</title>
-{% endblock %}
-{% block content %}
-<div class="container justify-content-center text-white">
-  <div class="code-generator">
-    <div class="generate-button">
-      <a
-        href="{% url 'generate-code' org_id=org.id %}"
-        class="btn btn-primary"
-        >Generate A Code</a
-      >
-    </div class="code-display">
-        <h3>Your org Join Code</h3>
-        <div class=" code">      
-        
-            {{ code.code }}        
-      
-        </div>
+{% endblock %} {% block content %}
+<div class="container d-flex justify-content-center align-items-center text-white">
+  <div class="code-generator justify-content-center text-center">
+    <div class="generate-button mb-3">
+      <a href="{% url 'generate-code' org_id=org.id %}" class="btn btn-primary">Generate A Code</a>
+    </div>
+    {% if error %}
+    <p style="color: red">{{ error }}</p>
+    {% endif %}
+    <div class="code-display">
+      <h3>Your org Join Code</h3>
+      <div class="code">
+        {{ code.code }}
+      </div>
+    </div>
   </div>
 </div>
-
 {% endblock %}
+
+

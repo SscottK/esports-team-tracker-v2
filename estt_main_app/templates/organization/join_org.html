@@ -1,24 +1,33 @@
-{% extends 'base.html' %}
-{% load static %}
-{% block head %}
-    <script>
-        function joinOrganization() {
-            // Get the value from the input field
-            var joinCode = document.getElementById('join-code').value;
-            // Construct the URL with the join code
-            var url = "{% url 'create-org-user' join_code='PLACEHOLDER' %}".replace('PLACEHOLDER', joinCode);
-            // Redirect to the constructed URL
-            window.location.href = url;
-        }
-    </script>
-{% endblock %} 
-
-{% block content %}
-<div>
+{% extends 'base.html' %} {% load static %} {% block head %}
+<title>ESTT - Join Organization</title>
+<link
+  rel="stylesheet"
+  href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+/>
+<script>
+  function joinOrganization() {
+    // Get the value from the input field
+    var joinCode = document.getElementById("join-code").value;
+    // Construct the URL with the join code
+    var url = "{% url 'create-org-user' join_code='PLACEHOLDER' %}".replace(
+      "PLACEHOLDER",
+      joinCode
+    );
+    // Redirect to the constructed URL
+    window.location.href = url;
+  }
+</script>
+{% endblock %} {% block content %}
+<div class="container text-white">
+  <h2>Join Organization</h2>
+  <div class="form-group">
     <label for="join-code">Join Code</label>
-    <input type="text" name="join-code" id="join-code">
-</div>
-<div>
-    <button class="btn btn-primary" onclick="joinOrganization()">Join Org</button>    
+    <input type="text" name="join-code" id="join-code" class="form-control" />
+  </div>
+  <div>
+    <button class="btn btn-primary" onclick="joinOrganization()">
+      Join Org
+    </button>
+  </div>
 </div>
 {% endblock %}

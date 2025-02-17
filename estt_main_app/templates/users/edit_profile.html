@@ -1,15 +1,19 @@
-{% extends "base.html" %}
-{% block head %}
-    <title>ESTT - Edit Profile</title>
-{% endblock %} 
-{% block content %}
+{% extends "base.html" %} {% block head %}
+<title>ESTT - Edit Profile</title>
+<link
+  rel="stylesheet"
+  href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+/>
+{% endblock %} {% block content %}
+<div class="container text-white">
   <h2>Edit Profile</h2>
   <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="">Save Changes</button>
+    <div class="form-group">{{ form.as_p }}</div>
+    <button type="submit" class="btn btn-primary">Save Changes</button>
   </form>
-  <div class="">
-    <a href="{% url 'dashboard' %}" class="nav-link">Cancel</a>
+  <div>
+    <a href="{% url 'dashboard' %}" class="btn btn-warning">Cancel</a>
   </div>
+</div>
 {% endblock %}

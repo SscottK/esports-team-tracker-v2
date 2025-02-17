@@ -364,7 +364,7 @@ def get_levels(request):
 
 #create new organization
 def create_org(request):
-    # try:
+    try:
         if request.method == 'POST':
             form_one = NewOrganizationForm(request.POST)
             form_two = AddOrgUserOnOrgCreationForm(request.POST)
@@ -391,8 +391,8 @@ def create_org(request):
             'form_one': form_one,
             'form_two': form_two,
         })
-    # except Exception as e:
-        # return JsonResponse({"error": "An unexpected error occurred while creating the organization. Please try again."}, status=500)
+    except Exception as e:
+        return JsonResponse({"error": "An unexpected error occurred while creating the organization. Please try again."}, status=500)
 
 
 #generate join code
@@ -405,6 +405,12 @@ def generate_join_code(request, org_id):
         
         org = get_object_or_404(Organization, id=org_id)
         code = Org_join_code.objects.filter(org=org.id).first()
+        if request.method == 'GET' and code:
+            return render(request, 'organization/org_code_generator.html', {
+                'error': 'A Join code already exists. Please use the current one.',
+                'org': org,
+                'code': code,
+                })
         new_join_code = Org_join_code(code=generate_random_code(8), org=org)
         
         new_join_code.save()
@@ -423,6 +429,7 @@ def join_codes(request, org_id):
     try:        
         org = get_object_or_404(Organization, id=org_id)
         code = Org_join_code.objects.filter(org=org.id).first()
+        
         return render(request, 'organization/org_code_generator.html', {
             'code': code,
             'org': org

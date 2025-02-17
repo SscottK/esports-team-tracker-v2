@@ -1,18 +1,20 @@
-{% extends 'base.html' %}
-{% load static %}
-{% block head %}
-    <title>ESTT - Create Team</title>
-{% endblock %}  
-{% block content %}
-<h2>Start A New Team</h2>
+{% extends 'base.html' %} {% load static %} {% block head %}
+<title>ESTT - Create Team</title>
+<link
+  rel="stylesheet"
+  href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+/>
+{% endblock %} {% block content %}
+<div class="container text-white">
+  <h2>Start A New Team</h2>
   {% if error_message %}
-    <p style="color: red;">{{ error_message }}</p>
+  <div class="alert alert-danger" role="alert">{{ error_message }}</div>
   {% endif %}
   <form method="post">
     {% csrf_token %}
-    {{ form_one.as_p }}
-    {{ form_two.as_p }}
-    <button type="submit">Create Team</button>
+    <div class="form-group">{{ form_one.as_p }}</div>
+    <div class="form-group">{{ form_two.as_p }}</div>
+    <button type="submit" class="btn btn-primary">Create Team</button>
   </form>
-
+</div>
 {% endblock %}

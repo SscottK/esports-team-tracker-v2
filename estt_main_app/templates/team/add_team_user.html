@@ -1,20 +1,23 @@
-{% extends 'base.html' %}
-{% load static %}
-{% block head %}
-    <title>ESTT - Add Member to Team</title>
-{% endblock %} 
-{% block content %}
-<h2>Add Member to Team</h2>
+{% extends 'base.html' %} {% load static %} {% block head %}
+<title>ESTT - Add Member to Team</title>
+<link
+  rel="stylesheet"
+  href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+/>
+{% endblock %} {% block content %}
+<div class="container text-white">
+  <h2>Add Member to Team</h2>
   {% if error_message %}
-    <p style="color: red;">{{ error_message }}</p>
+  <div class="alert alert-danger" role="alert">{{ error_message }}</div>
   {% endif %}
   <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}    
-    <input type="hidden" id="user-id" name="user">
-    <button type="submit">Add User</button>
+    <div class="form-group">
+      {{ form.as_p }}
+    </div>
+    <input type="hidden" id="user-id" name="user" />
+    <button type="submit" class="btn btn-primary">Add User</button>
   </form>
-
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
@@ -26,26 +29,27 @@
       resultsDropdown.style.backgroundColor = "#fff";
       resultsDropdown.style.zIndex = "1000";
       searchInput.parentNode.appendChild(resultsDropdown);
-  
+
       // Get the organization ID from the template context or a data attribute
       const organizationId = "{{ org.id }}"; // Example: Assuming you pass organization.id from the view
-  
+
       searchInput.addEventListener("input", async () => {
         const query = searchInput.value;
         if (query.length < 1) {
           resultsDropdown.innerHTML = "";
           return;
         }
-  
+
         // Include the organization ID in the fetch request
         const response = await fetch(
           `/search-users/?q=${query}&organization_id=${organizationId}`
         );
         const users = await response.json();
-  
+
         resultsDropdown.innerHTML = "";
         users.forEach((user) => {
           const option = document.createElement("div");
+          option.classList.add("dropdown-item"); // Bootstrap class for dropdown items
           option.textContent = user.username;
           option.style.cursor = "pointer";
           option.addEventListener("click", () => {
@@ -56,7 +60,21 @@
           resultsDropdown.appendChild(option);
         });
       });
+
+      // Bootstrap styling for the dropdown
+      searchInput.addEventListener("focus", () => {
+        resultsDropdown.style.display = "block";
+      });
+
+      searchInput.addEventListener("blur", () => {
+        setTimeout(() => {
+          resultsDropdown.style.display = "none";
+        }, 200); // Delay to allow click to register
+      });
+
+      resultsDropdown.classList.add("dropdown-menu"); // Bootstrap class for dropdown menu
+      resultsDropdown.style.display = "none"; // Initially hide the dropdown
     });
   </script>
-
+</div>
 {% endblock %}

@@ -17,7 +17,7 @@
 }
 
 .code {
-    
+    display: flex;
     justify-content: center;
     text-align: center;
     border: 1px solid white;
@@ -27,6 +27,8 @@
     width: 150px;    
     background-color: black;
     color: white;
+    margin: 30px auto 0;
+    
     
 }
 
