@@ -1,68 +1,162 @@
-.team-detail-container {
+.container-fluid {
+    padding: 0;
+    margin: 0;
+    min-height: 100vh;
+    background-color: #2d2d2d;
+    color: #ffffff;
+}
+
+/* Side menu styles */
+.side-menu {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 200px;
+    background-color: #1a1a1a;
+    border-right: 2px solid #9c27b0;
+    padding-top: 20px;
+    z-index: 1000;
+}
+
+.list-group {
+    border: none;
+    border-radius: 0;
+}
+
+.list-group-item {
+    background-color: #1a1a1a !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 15px 20px;
+    cursor: pointer;
+}
+
+.list-group-item:hover {
+    background-color: #2d2d2d !important;
+}
+
+.list-group-item.active {
+    background-color: #9c27b0 !important;
+    border: none !important;
+}
+
+/* Main content area */
+.main-content {
+    margin-left: 200px;
+    padding: 20px;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+/* Header section */
+.text-center {
     width: 100%;
-    border: 5px solid yellow;
-    
-
+    max-width: 800px;
+    margin-bottom: 2rem;
 }
 
-.members-games-container {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-    
+/* Content section */
+.content-section {
     width: 100%;
-    height: 500px;
-    border: 1px solid blue;
+    max-width: 800px;
 }
 
-.game-container, .coaches-container, .members-container {
-    /* /* display: flex; */
-    /* flex-direction: column; */
-    border: 5px solid red;
-    /* width: 40%; */
-    margin: 0;
+/* Card styles */
+.card {
+    background-color: #1a1a1a;
+    border: 1px solid #9c27b0;
+    border-radius: 8px;
+    margin-bottom: 2rem;
 }
 
-.add-member-container {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-around;
-    border: 5px solid white;
-    width: 100%;
-    padding: 0 25px 0;
-
+.card-header {
+    background-color: #1a1a1a !important;
+    border-bottom: 1px solid #9c27b0 !important;
+    padding: 1rem;
+    color: #ffffff;
 }
 
-.add-game {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 15px;
-    border: 5px solid blue;
-    
+.card-body {
+    padding: 1rem;
 }
 
-
-.game-table-container, .game-table {
-    justify-items: center;
-}
-
-/* .list-group {
-    position: fixed;
-    top: 50%;
-    transform: translateY(-50%);
-    left: 1rem;
-} */
-
+/* Table styles */
 .table-responsive {
-  overflow-x: auto;
+    margin-top: 1rem;
 }
 
 .table {
-  width: auto;
+    color: #ffffff;
+    background-color: #1a1a1a;
+}
+
+.table th,
+.table td {
+    border-color: #9c27b0 !important;
+}
+
+/* Game table container */
+.game-table-container {
+    width: 100%;
+}
+
+.game-table {
+    width: 100%;
+}
+
+/* Button styles */
+.btn-primary {
+    background-color: #9c27b0 !important;
+    border-color: #9c27b0 !important;
+}
+
+.btn-primary:hover {
+    background-color: #ba68c8 !important;
+    border-color: #ba68c8 !important;
+}
+
+.btn-link {
+    color: #9c27b0 !important;
+    text-decoration: none;
+}
+
+.btn-link:hover {
+    color: #ba68c8 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .side-menu {
+        position: static;
+        width: 100%;
+        border-right: none;
+        border-bottom: 2px solid #9c27b0;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    .main-content {
+        margin-left: 0;
+        padding: 15px;
+    }
+
+    .content-section {
+        padding: 0;
+    }
+
+    .list-group {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+    }
+
+    .list-group-item {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+    }
 }

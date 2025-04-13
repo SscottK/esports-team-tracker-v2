@@ -17,59 +17,54 @@
 
 <title>ESTT - Team Details</title>
 {% endblock %} {% block content %}
-<div
-  class="container mt-4 text-white"
-  x-data="teamDetails()"
-  x-init="loadGames({{ team.id }})"
->
-  <div class="text-center mb-4">
-    <h1>Team Details</h1>
-    <h3>Name: <span class="font-weight-bold">{{ team.name }}</span></h3>
-
-    {% if team_user.isCoach %} {% if org %}
-    <a class="btn btn-primary" href="{% url 'join-codes' org_id=org.id %}"
-      >Join Codes</a
-    >
-    {% endif %} {% endif %}
+<div class="container-fluid" x-data="teamDetails()" x-init="loadGames({{ team.id }})">
+  <!-- Side Menu -->
+  <div class="side-menu">
+    <div class="list-group">
+      <button
+        class="list-group-item list-group-item-action"
+        :class="{ active: activeSection === 'games' }"
+        @click="activeSection = 'games'"
+      >
+        Games
+      </button>
+      <button
+        class="list-group-item list-group-item-action"
+        :class="{ active: activeSection === 'coaches' }"
+        @click="activeSection = 'coaches'"
+      >
+        Coaches
+      </button>
+      <button
+        class="list-group-item list-group-item-action"
+        :class="{ active: activeSection === 'members' }"
+        @click="activeSection = 'members'"
+      >
+        Members
+      </button>
+    </div>
   </div>
 
-  <div class="row">
-    <div class="col-md-3">
-      <!-- Side Menu -->
-      <div class="list-group">
-        <button
-          class="list-group-item list-group-item-action"
-          :class="{ active: activeSection === 'games' }"
-          @click="activeSection = 'games'"
-        >
-          Games
-        </button>
-        <button
-          class="list-group-item list-group-item-action"
-          :class="{ active: activeSection === 'coaches' }"
-          @click="activeSection = 'coaches'"
-        >
-          Coaches
-        </button>
-        <button
-          class="list-group-item list-group-item-action"
-          :class="{ active: activeSection === 'members' }"
-          @click="activeSection = 'members'"
-        >
-          Members
-        </button>
-      </div>
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header -->
+    <div class="text-center">
+      <h1>Team Details</h1>
+      <h3>Name: <span class="font-weight-bold">{{ team.name }}</span></h3>
+
+      {% if team_user.isCoach %} {% if org %}
+      <a class="btn btn-primary" href="{% url 'join-codes' org_id=org.id %}"
+        >Join Codes</a
+      >
+      {% endif %} {% endif %}
     </div>
 
-    <div class="col-md-9">
-      <!-- Content Area -->
-
+    <!-- Content Sections -->
+    <div class="content-section">
+      <!-- Games Section -->
       <div x-show="activeSection === 'games'" class="mt-4">
-        <!-- Added mb-4 -->
-        <div class="card mb-4">
-          <div
-            class="card-header d-flex justify-content-between align-items-center px-3"
-          >
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
             <h2 class="mb-0">Games</h2>
             {% if team_user.isCoach %}
             <div>
@@ -93,7 +88,7 @@
           </div>
         </div>
 
-        <!-- Times Table (Initially Hidden) -->
+        <!-- Times Table -->
         <div class="game-table-container mt-3" x-show="tableData">
           <template x-if="tableData && tableData.levels">
             <div x-show="tableData.levels.length > 0" class="game-table">
@@ -114,8 +109,8 @@
                 </a>
               </div>
 
-              <div class="table-responsive">
-                <table class="table table-bordered mt-3" style="width: auto;">
+              <div class="table-responsive mt-3">
+                <table class="table table-bordered">
                   <thead>
                     <tr>
                       <th>Level</th>
@@ -147,13 +142,13 @@
         </div>
       </div>
 
+      <!-- Coaches Section -->
       <div x-show="activeSection === 'coaches'" class="mt-4">
-        <!-- Added mb-4 -->
-        <div class="card mb-4">
+        <div class="card">
           <div class="card-header d-flex justify-content-between align-items-center">
             <h2>Coaches</h2>
             {% if team_user.isCoach %}
-            <a href="{% url 'add_team_member' teamID=team.id org_id=org.id %}?is_coach=true" class="btn btn-primary btn-sm">Add Coach</a>
+            <a href="{% url 'add_team_member' teamID=team.id org_id=org.id %}?is_coach=true" class="btn btn-primary">Add Coach</a>
             {% endif %}
           </div>
           <div class="card-body">
@@ -165,11 +160,11 @@
                 <div>
                   <form method="post" action="{% url 'demote_coach' teamID=team.id userID=member.user.id %}" class="d-inline me-2">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-warning btn-sm">Demote to Player</button>
+                    <button type="submit" class="btn btn-warning">Demote to Player</button>
                   </form>
                   <form method="post" action="{% url 'remove_coach' teamID=team.id userID=member.user.id %}" class="d-inline">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to remove this coach?')">
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to remove this coach?')">
                       <i class="fas fa-trash"></i>
                     </button>
                   </form>
@@ -182,14 +177,12 @@
         </div>
       </div>
 
+      <!-- Members Section -->
       <div x-show="activeSection === 'members'" class="mt-4">
-        <!-- Added mb-4 -->
-        <div class="card mb-4">
-          <div
-            class="card-header d-flex justify-content-between align-items-center"
-          >
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
             <h2>Members</h2>
-            <a href="{% url 'add_team_member' teamID=team.id org_id=org.id %}" class="btn btn-primary btn-sm">Add Member</a>
+            <a href="{% url 'add_team_member' teamID=team.id org_id=org.id %}" class="btn btn-primary">Add Member</a>
           </div>
           <div class="card-body">
             <ul class="list-group">
@@ -199,7 +192,7 @@
                 {% if team_user.isCoach %}
                 <form method="post" action="{% url 'remove_team_member' teamID=team.id userID=member.user.id %}" class="d-inline">
                   {% csrf_token %}
-                  <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to remove this member?')">
+                  <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to remove this member?')">
                     <i class="fas fa-trash"></i>
                   </button>
                 </form>

@@ -1,45 +1,125 @@
 body {
-    background-color: #000 !important;
-    
-    
+    background-color: #2d2d2d !important; /* Dark grey background */
+    color: #ffffff; /* White text */
 }
 
 a {
     text-decoration: none;
-    color: green;
+    color: #9c27b0; /* Purple links */
     padding: 0 15px;
 }
 
-/* .nav-container {
-    
-    
-    border: 5px solid red
-} */
+a:hover {
+    color: #ba68c8; /* Lighter purple on hover */
+}
 
-/* .user-action-links {
+.navbar {
+    background-color: #1a1a1a !important;
+    border-bottom: 2px solid #9c27b0;
+    max-height: 60px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+}
+
+.navbar-brand {
+    color: #ffffff !important;
+}
+
+.nav-link {
+    color: #ffffff !important;
+}
+
+.nav-link:hover {
+    color: #9c27b0 !important;
+}
+
+.navbar-toggler {
+    padding: 0.25rem 0.5rem;
+}
+
+.nav-item {
     display: flex;
-    
-    justify-content: right;
-    border: 3px solid green;
-    
-    
-} */
+    align-items: center;
+    height: 100%;
+}
 
-/* .dashboard-link {
-    display: flex;
-    
-    border: 3px solid purple;
-} */
+.btn-primary {
+    background-color: #9c27b0 !important; /* Purple buttons */
+    border-color: #9c27b0 !important;
+}
 
+.btn-primary:hover {
+    background-color: #ba68c8 !important; /* Lighter purple on hover */
+    border-color: #ba68c8 !important;
+}
 
-/* .nav-links {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    
-    
-} */
+.btn-secondary {
+    background-color: #4a4a4a !important; /* Medium grey buttons */
+    border-color: #4a4a4a !important;
+}
 
-/* navbar {
-    background-color: #000;
-} */
+.btn-secondary:hover {
+    background-color: #666666 !important; /* Lighter grey on hover */
+    border-color: #666666 !important;
+}
+
+.card {
+    background-color: #1a1a1a !important; /* Darker grey cards */
+    border: 1px solid #9c27b0 !important; /* Purple border */
+}
+
+.table {
+    color: #ffffff !important; /* White text in tables */
+}
+
+.table thead th {
+    background-color: #4a4a4a !important; /* Medium grey table headers */
+    border-color: #9c27b0 !important; /* Purple borders */
+}
+
+.table tbody td {
+    border-color: #9c27b0 !important; /* Purple borders */
+}
+
+.alert {
+    background-color: #1a1a1a !important; /* Darker grey alerts */
+    border-color: #9c27b0 !important; /* Purple borders */
+    color: #ffffff !important; /* White text */
+}
+
+@media (max-width: 992px) {
+    .navbar-collapse {
+        background-color: #1a1a1a;
+        position: absolute;
+        top: 50px;
+        left: 0;
+        right: 0;
+        padding: 0.5rem;
+    }
+
+    .navbar-nav {
+        height: auto;
+    }
+
+    .nav-item {
+        height: 40px;
+    }
+
+    .nav-link {
+        height: 40px;
+        line-height: 40px;
+    }
+}
+
+.container, .container-fluid {
+    padding-top: 60px;
+    width: 100%;
+}
+
+/* Remove the main-content-wrapper margin since we're using padding-top on container */
+.main-content-wrapper {
+    padding: 1rem;
+    width: 100%;
+}

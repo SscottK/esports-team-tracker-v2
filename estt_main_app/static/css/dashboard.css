@@ -1,4 +1,3 @@
-
 .dashboard-teams-container {
     display: flex;
     flex-direction: column;
@@ -41,9 +40,10 @@
     /* flex-direction: row; */
     /* justify-content: space-evenly; */
     /* font-size: 20px; */
-    border: 3px solid purple;
-    
-    
+    border: 3px solid #9c27b0; /* Purple border */
+    background-color: #1a1a1a; /* Dark grey background */
+    padding: 20px;
+    border-radius: 8px;
 }
 
 
@@ -52,19 +52,23 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    color: #ffffff; /* White text */
 }
 
 .teams-head, .times-head {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    color: #ffffff; /* White text */
     /* border: 5px solid blue; */
 }
 
 
 
 .team-thead, .times-thead {
-    background-color: grey;
+    background-color: #4a4a4a; /* Medium grey */
+    color: #ffffff; /* White text */
+    border-color: #9c27b0; /* Purple borders */
 }
 
 #table-container {
@@ -86,5 +90,29 @@
     #table-container {
       display: block; /* Show in original position on larger screens */
     }
+  }
+  
+  /* Additional styling for the new color scheme */
+  .team-card {
+    background-color: #1a1a1a; /* Dark grey */
+    border: 1px solid #9c27b0; /* Purple border */
+    margin-bottom: 15px;
+    border-radius: 8px;
+  }
+  
+  .team-card:hover {
+    background-color: #2d2d2d; /* Slightly lighter grey on hover */
+  }
+  
+  .time-entry {
+    background-color: #1a1a1a; /* Dark grey */
+    border: 1px solid #9c27b0; /* Purple border */
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 4px;
+  }
+  
+  .time-entry:hover {
+    background-color: #2d2d2d; /* Slightly lighter grey on hover */
   }
   
