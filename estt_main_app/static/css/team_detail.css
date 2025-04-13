@@ -38,7 +38,7 @@
 }
 
 .list-group-item.active {
-    background-color: #9c27b0 !important;
+    background: linear-gradient(to right, #6f2da8, #9932cc) !important;
     border: none !important;
 }
 

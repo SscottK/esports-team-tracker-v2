@@ -1,9 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, GameSuggestionForm
 from django.urls import reverse_lazy
-from .models import Team_user, Team, Team_game, Game, Level, Time, Organization, Org_user, Org_join_code, Org_team
+from .models import Team_user, Team, Team_game, Game, Level, Time, Organization, Org_user, Org_join_code, Org_team, GameSuggestion
 from django.contrib.auth.models import User
 from django.views.generic.edit import CreateView, UpdateView
 from .forms import TeamUserForm, EditProfileForm, NewTeamForm, AddTeamUserOnTeamCreationForm, TeamGameForm, TimeCreationForm, TimeUpdateForm, TargetTimesCreationForm, NewOrganizationForm, AddOrgUserOnOrgCreationForm, CreateOrgJoinCode
@@ -16,6 +16,7 @@ from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist
 from io import StringIO
 import re
+from django.contrib.admin.views.decorators import staff_member_required
 
 
 
@@ -116,7 +117,7 @@ def add_team_member(request, teamID, org_id):
             messages.error(request, 'You are not a member of this team.')
             return redirect('dashboard')
         
-        # Sanitize and validate is_coach parameter
+        # Get whether this is a coach addition from the URL parameter
         is_coach = request.GET.get('is_coach', 'false').lower() == 'true'
         
         if request.method == 'POST':
@@ -124,44 +125,76 @@ def add_team_member(request, teamID, org_id):
                 # Validate user ID
                 user_id = request.POST.get('user')
                 if not user_id:
-                    messages.error(request, 'No user selected.')
-                    return redirect('team-details', teamID=teamID)
+                    return render(request, 'team/add_team_user.html', {
+                        'team': team,
+                        'org': org,
+                        'is_coach': is_coach,
+                        'error_message': 'Please select a user to add.'
+                    })
                     
                 # Get user with error handling
                 try:
                     user = get_object_or_404(User, id=user_id)
                 except User.DoesNotExist:
-                    messages.error(request, 'Selected user not found.')
-                    return redirect('team-details', teamID=teamID)
+                    return render(request, 'team/add_team_user.html', {
+                        'team': team,
+                        'org': org,
+                        'is_coach': is_coach,
+                        'error_message': 'Selected user not found.'
+                    })
                 
                 # Check if user is active
                 if not user.is_active:
-                    messages.error(request, 'Cannot add an inactive user to the team.')
-                    return redirect('team-details', teamID=teamID)
+                    return render(request, 'team/add_team_user.html', {
+                        'team': team,
+                        'org': org,
+                        'is_coach': is_coach,
+                        'error_message': 'Cannot add an inactive user to the team.'
+                    })
                 
                 # Check if user is already in the team
                 existing_team_user = Team_user.objects.filter(team=team, user=user).first()
                 
                 if existing_team_user:
-                    # Update existing team user's coach status
-                    existing_team_user.isCoach = is_coach
-                    existing_team_user.save()
-                    messages.success(request, f'Updated {user.username}\'s coach status.')
-                else:
-                    # Create new team user
-                    new_team_user = Team_user(
-                        team=team,
-                        user=user,
-                        isCoach=is_coach
-                    )
-                    new_team_user.save()
-                    messages.success(request, f'Added {user.username} to the team.')
+                    if is_coach and not existing_team_user.isCoach:
+                        # If promoting a member to coach
+                        existing_team_user.isCoach = True
+                        existing_team_user.save()
+                        messages.success(request, f'Promoted {user.username} to coach.')
+                        return redirect('team-details', teamID=teamID)
+                    elif not is_coach and existing_team_user.isCoach:
+                        # If demoting a coach to member
+                        existing_team_user.isCoach = False
+                        existing_team_user.save()
+                        messages.success(request, f'Changed {user.username} to team member.')
+                        return redirect('team-details', teamID=teamID)
+                    else:
+                        role = 'coach' if existing_team_user.isCoach else 'member'
+                        return render(request, 'team/add_team_user.html', {
+                            'team': team,
+                            'org': org,
+                            'is_coach': is_coach,
+                            'error_message': f'This user is already a {role} of the team.'
+                        })
+                
+                # Create new team user with coach status from URL
+                new_team_user = Team_user(
+                    team=team,
+                    user=user,
+                    isCoach=is_coach
+                )
+                new_team_user.save()
+                messages.success(request, f'Added {user.username} as {"coach" if is_coach else "member"}.')
                 
                 return redirect('team-details', teamID=teamID)
                 
             except Exception as e:
-                messages.error(request, f'Error adding team member: {str(e)}')
-                return redirect('team-details', teamID=teamID)
+                return render(request, 'team/add_team_user.html', {
+                    'team': team,
+                    'org': org,
+                    'is_coach': is_coach,
+                    'error_message': f'Error adding team member: {str(e)}'
+                })
         else:
             form = TeamUserForm()
         
@@ -1415,3 +1448,69 @@ def remove_coach(request, teamID, userID):
     
     messages.success(request, f'{team_user_to_remove.user.username} has been removed from the team.')
     return redirect('team-details', teamID=teamID)
+
+@login_required
+def suggest_game(request):
+    if request.method == 'POST':
+        form = GameSuggestionForm(request.POST)
+        if form.is_valid():
+            suggestion = form.save(commit=False)
+            suggestion.suggested_by = request.user
+            suggestion.save()
+            messages.success(request, 'Game suggestion submitted successfully!')
+            return redirect('dashboard')
+    else:
+        form = GameSuggestionForm()
+    
+    return render(request, 'estt_main_app/suggest_game.html', {'form': form})
+
+@staff_member_required
+def manage_game_suggestions(request):
+    search_query = request.GET.get('search', '')
+    suggestions = GameSuggestion.objects.all().order_by('-created_at')
+    
+    if search_query:
+        suggestions = suggestions.filter(game_name__icontains=search_query)
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'add_suggestion':
+            suggestion_id = request.POST.get('suggestion_id')
+            try:
+                suggestion = GameSuggestion.objects.get(id=suggestion_id)
+                # Create new game from suggestion
+                Game.objects.create(game=suggestion.game_name)
+                suggestion.delete()
+                messages.success(request, f'Game "{suggestion.game_name}" has been added successfully!')
+            except GameSuggestion.DoesNotExist:
+                messages.error(request, 'Selected suggestion not found.')
+            except Exception as e:
+                messages.error(request, f'Error adding game: {str(e)}')
+                
+        elif action == 'add_custom':
+            game_name = request.POST.get('game_name', '').strip()
+            if game_name:
+                try:
+                    Game.objects.create(game=game_name)
+                    messages.success(request, f'Game "{game_name}" has been added successfully!')
+                except Exception as e:
+                    messages.error(request, f'Error adding game: {str(e)}')
+            else:
+                messages.error(request, 'Please enter a game name.')
+                
+        elif action == 'delete_suggestion':
+            suggestion_id = request.POST.get('suggestion_id')
+            try:
+                suggestion = GameSuggestion.objects.get(id=suggestion_id)
+                suggestion.delete()
+                messages.success(request, f'Suggestion "{suggestion.game_name}" has been deleted.')
+            except GameSuggestion.DoesNotExist:
+                messages.error(request, 'Selected suggestion not found.')
+            except Exception as e:
+                messages.error(request, f'Error deleting suggestion: {str(e)}')
+    
+    return render(request, 'admin/manage_game_suggestions.html', {
+        'suggestions': suggestions,
+        'search_query': search_query
+    })

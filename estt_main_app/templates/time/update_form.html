@@ -13,7 +13,10 @@
   <form method="post">
     {% csrf_token %}
     <div class="form-group">{{ form.as_p }}</div>
-    <button type="submit" class="btn btn-primary">Update Time</button>
+    <div class="d-flex gap-3">
+      <button type="submit" class="btn btn-primary">Update Time</button>
+      <a href="{% url 'dashboard' %}" class="header-btn">Cancel</a>
+    </div>
   </form>
 </div>
 {% endblock %}

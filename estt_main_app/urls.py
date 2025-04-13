@@ -4,8 +4,6 @@ from . import views
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.views import LogoutView
 
-
-
 urlpatterns = [
     path('', views.home, name='home'),
     path('signup/', views.signup, name='signup'), 
@@ -36,4 +34,6 @@ urlpatterns = [
     path('deactivate/', views.deactivate_account, name='deactivate_account'),
     path('goodbye/', views.goodbye_page, name='goodbye'),    
     path('team/<int:org_id>/<int:team_id>/upload/', views.upload_times, name='upload_times'),
-    ]
+    path('suggest-game/', views.suggest_game, name='suggest_game'),
+    path('manage-game-suggestions/', views.manage_game_suggestions, name='manage-game-suggestions'),
+]

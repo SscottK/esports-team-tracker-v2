@@ -5,19 +5,33 @@
   href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
 />
 {% endblock %} {% block content %}
-<div class="container text-white">
-  <h2>Edit Profile</h2>
-  <form method="post">
-    {% csrf_token %}
-    <div class="form-group">{{ form.as_p }}</div>
-    <button type="submit" class="btn btn-primary mb-4">Save Changes</button>
-  </form>
-  <div>
-    <a href="{% url 'dashboard' %}" class="btn btn-warning mb-4">Cancel</a>
+<div class="container mt-4">
+  <div class="card card-dark">
+    <div class="card-header card-header-gradient">
+      <h2 class="mb-0">Edit Profile</h2>
+    </div>
+    <div class="card-body">
+      {% if error_message %}
+      <div class="alert alert-danger" role="alert">{{ error_message }}</div>
+      {% endif %}
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group">{{ form.as_p }}</div>
+        <div class="d-flex gap-3">
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+          <a href="{% url 'dashboard' %}" class="header-btn">Cancel</a>
+        </div>
+      </form>
+      
+      <hr class="border-secondary my-4">
+      
+      <div class="danger-zone">
+        <h4 class="text-danger mb-3">Danger Zone</h4>
+        <form method="get" action="{% url 'deactivate_account' %}">
+          <button type="submit" class="btn btn-danger">Deactivate Account</button>
+        </form>
+      </div>
+    </div>
   </div>
-  <form method="get" action="{% url 'deactivate_account' %}">
-    <button type="submit" class="btn btn-danger mb-4">Deactivate Account</button>
-  </form>
-  
 </div>
 {% endblock %}

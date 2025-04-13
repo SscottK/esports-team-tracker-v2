@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Team_user, Team, Team_game, Time, Target_times, Level, Organization, Org_user, Org_join_code
+from .models import Team_user, Team, Team_game, Time, Target_times, Level, Organization, Org_user, Org_join_code, GameSuggestion
 
 
 
@@ -116,3 +116,11 @@ class CreateOrgJoinCode(forms.ModelForm):
     class Meta:
         model = Org_join_code
         exclude = ['code', 'org']
+
+class GameSuggestionForm(forms.ModelForm):
+    class Meta:
+        model = GameSuggestion
+        fields = ['game_name']
+        widgets = {
+            'game_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter game name'})
+        }

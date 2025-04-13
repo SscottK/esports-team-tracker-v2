@@ -163,3 +163,11 @@ class Org_join_code(models.Model):
 
     #the org that code if for
     org = models.ForeignKey(Organization, on_delete=models.CASCADE)
+
+class GameSuggestion(models.Model):
+    game_name = models.CharField(max_length=255, unique=True)
+    suggested_by = models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.game_name

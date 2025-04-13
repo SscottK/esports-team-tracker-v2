@@ -63,13 +63,13 @@
     <div class="content-section">
       <!-- Games Section -->
       <div x-show="activeSection === 'games'" class="mt-4">
-        <div class="card">
-          <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="card card-dark">
+          <div class="card-header card-header-gradient d-flex justify-content-between align-items-center">
             <h2 class="mb-0">Games</h2>
             {% if team_user.isCoach %}
-            <div class="d-flex gap-3">
-              <a href="{% url 'add_team_game' team_id=team.id %}" class="btn btn-success home-style">Add Game</a>
-              <a href="{% url 'upload_times' org_id=org.id team_id=team.id %}" class="btn btn-primary">Import Times</a>
+            <div class="header-btns-container">
+              <a href="{% url 'add_team_game' team_id=team.id %}" class="header-btn">Add Game</a>
+              <a href="{% url 'upload_times' org_id=org.id team_id=team.id %}" class="header-btn">Import Times</a>
             </div>
             {% endif %}
           </div>
@@ -146,11 +146,13 @@
 
       <!-- Coaches Section -->
       <div x-show="activeSection === 'coaches'" class="mt-4">
-        <div class="card">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <h2>Coaches</h2>
+        <div class="card card-dark">
+          <div class="card-header card-header-gradient d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">Coaches</h2>
             {% if team_user.isCoach %}
-            <a href="{% url 'add_team_member' teamID=team.id org_id=org.id %}?is_coach=true" class="btn btn-primary">Add Coach</a>
+            <div class="header-btns-container">
+              <a href="{% url 'add_team_member' teamID=team.id org_id=org.id %}?is_coach=true" class="header-btn">Add Coach</a>
+            </div>
             {% endif %}
           </div>
           <div class="card-body">
@@ -181,10 +183,12 @@
 
       <!-- Members Section -->
       <div x-show="activeSection === 'members'" class="mt-4">
-        <div class="card">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <h2>Members</h2>
-            <a href="{% url 'add_team_member' teamID=team.id org_id=org.id %}" class="btn btn-primary">Add Member</a>
+        <div class="card card-dark">
+          <div class="card-header card-header-gradient d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">Members</h2>
+            <div class="header-btns-container">
+              <a href="{% url 'add_team_member' teamID=team.id org_id=org.id %}" class="header-btn">Add Member</a>
+            </div>
           </div>
           <div class="card-body">
             <ul class="list-group">

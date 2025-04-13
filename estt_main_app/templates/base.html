@@ -13,7 +13,43 @@
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" 
         crossorigin="anonymous"
     />
-    
+    <style>
+        /* Global card header gradient style */
+        .card-header-gradient {
+            background: linear-gradient(to right, #6f2da8, #9932cc);
+            color: white;
+            border-bottom: none;
+        }
+        .card-dark {
+            background-color: rgba(33, 37, 41, 0.95);
+            border: 1px solid #6f2da8;
+        }
+        .card-dark .card-body {
+            color: white;
+        }
+        /* Header button style - matching home page */
+        .header-btn {
+            color: white;
+            border: 1px solid white;
+            background: transparent;
+            border-radius: 5px;
+            padding: 6px 20px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        .header-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+        }
+        .header-btns-container {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+    </style>
     {% block head %}
     {% endblock %}
 </head>

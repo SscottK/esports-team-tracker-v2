@@ -4,19 +4,49 @@
   rel="stylesheet"
   href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
 />
+<style>
+  .card-header-custom {
+    background: linear-gradient(to right, #6f2da8, #9932cc);
+    color: white;
+    border-bottom: none;
+  }
+  .card-custom {
+    background-color: rgba(33, 37, 41, 0.95);
+    border: 1px solid #6f2da8;
+  }
+  .card-custom .card-body {
+    color: white;
+  }
+</style>
 {% endblock %} {% block content %}
 <div class="container text-white">
-  <h2>Add Game to Team</h2>
-  {% if error_message %}
-  <div class="alert alert-danger" role="alert">{{ error_message }}</div>
-  {% endif %}
-  <form method="post">
-    {% csrf_token %}
-    <div class="form-group">{{ form.as_p }}</div>
-    <div class="d-flex gap-2">
-      <button type="submit" class="btn btn-primary">Add Game</button>
-      <a href="{% url 'team-details' teamID=team.id %}" class="btn btn-secondary">Cancel</a>
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <h2>Add Game to Team</h2>
+      {% if error_message %}
+      <div class="alert alert-danger" role="alert">{{ error_message }}</div>
+      {% endif %}
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group">{{ form.as_p }}</div>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">Add Game</button>
+          <a href="{% url 'team-details' teamID=team.id %}" class="btn btn-secondary">Nevermind</a>
+        </div>
+      </form>
+
+      <div class="mt-4">
+        <div class="card card-custom">
+          <div class="card-header card-header-custom">
+            <h5 class="mb-0">Don't see your game?</h5>
+          </div>
+          <div class="card-body">
+            <p>If the game you want to add isn't listed above, you can suggest it to be added to the system.</p>
+            <a href="{% url 'suggest_game' %}" class="btn" style="background-color: #6f2da8; color: white;">Suggest a New Game</a>
+          </div>
+        </div>
+      </div>
     </div>
-  </form>
+  </div>
 </div>
 {% endblock %}
