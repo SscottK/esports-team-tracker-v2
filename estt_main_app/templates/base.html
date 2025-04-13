@@ -75,6 +75,17 @@
                 <a class="nav-link" href="{% url 'home' %}">Home</a>
               </li>
               {% else %}
+              {% if user.is_staff %}
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Admin
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
+                  <li><a class="dropdown-item" href="{% url 'manage-game-suggestions' %}">Manage Game Suggestions</a></li>
+                  <li><a class="dropdown-item" href="/admin/">Django Admin</a></li>
+                </ul>
+              </li>
+              {% endif %}
               <li class="nav-item">
                 <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
               </li>
