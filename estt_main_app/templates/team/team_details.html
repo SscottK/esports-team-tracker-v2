@@ -67,8 +67,8 @@
           <div class="card-header d-flex justify-content-between align-items-center">
             <h2 class="mb-0">Games</h2>
             {% if team_user.isCoach %}
-            <div>
-              <a href="/add-game/{{ team.id }}/" class="btn btn-success me-2">Add Game</a>
+            <div class="d-flex gap-3">
+              <a href="{% url 'add_team_game' team_id=team.id %}" class="btn btn-success home-style">Add Game</a>
               <a href="{% url 'upload_times' org_id=org.id team_id=team.id %}" class="btn btn-primary">Import Times</a>
             </div>
             {% endif %}
@@ -92,21 +92,23 @@
         <div class="game-table-container mt-3" x-show="tableData">
           <template x-if="tableData && tableData.levels">
             <div x-show="tableData.levels.length > 0" class="game-table">
-              <h2 x-text="tableData.game"></h2>
-              <div
-                x-data="{ id: null }"
-                x-init="fetchId().then(result => id = result)"
-              >
-                <a
-                  :href="
-                    id
-                      ? `/new-target-times/${tableData.team_id}/${tableData.game_id}/`
-                      : '#'
-                  "
-                  class="btn btn-warning"
+              <div class="text-center mb-3">
+                <h2 x-text="tableData.game" class="mb-3"></h2>
+                <div
+                  x-data="{ id: null }"
+                  x-init="fetchId().then(result => id = result)"
                 >
-                  Add Target Times
-                </a>
+                  <a
+                    :href="
+                      id
+                        ? `/new-target-times/${tableData.team_id}/${tableData.game_id}/`
+                        : '#'
+                    "
+                    class="btn btn-warning"
+                  >
+                    Add Target Times
+                  </a>
+                </div>
               </div>
 
               <div class="table-responsive mt-3">

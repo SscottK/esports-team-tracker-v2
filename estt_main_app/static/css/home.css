@@ -5,12 +5,23 @@
     flex-direction: column;
     justify-content: center;    
     text-align: center;
-    
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+.welcome-blurb h2 {
+    color: #9c27b0;
+    margin-bottom: 1.5rem;
 }
 
 .login-signup-links {    
-    text-align: right;    
-    
+    text-align: center;
+    width: 100%;
+}
+
+.login-signup-links nav {
+    gap: 3rem;
 }
 
 .login, .signup {
@@ -19,10 +30,25 @@
 
 .blurb-links {    
     padding: 4px;
+    color: #9c27b0;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.blurb-links:hover {
+    color: #ba68c8;
+    text-decoration: underline;
 }
 
 .home-btn {
-    margin: 0px 150px;
+    font-size: 1.2rem;
+    padding: 0.5rem 2rem;
+    transition: all 0.3s ease;
+}
+
+.home-btn:hover {
+    background-color: #9c27b0;
+    border-color: #9c27b0;
 }
 
 .logo-div {
@@ -33,7 +59,7 @@
 }
 
 .logo-image {
-    
-    width: 400px;
+    max-width: 100%;
     height: auto;
+    margin: 0 auto;
 }

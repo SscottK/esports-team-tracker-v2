@@ -371,27 +371,44 @@ def get_table_data(request):
 # Add game to team
 @login_required
 def create_team_game(request, team_id):
-    team = get_object_or_404(Team, id=team_id)
-    # Check if the user is a coach for the team
-    team_user = get_object_or_404(Team_user, team=team, user=request.user)
-    if not team_user.isCoach:
-        return HttpResponse('You are not allowed to add a game to this team.', status=403)
-    
-    if request.method == 'POST':
-        form = TeamGameForm(request.POST)
+    try:
+        team = get_object_or_404(Team, id=team_id)
+        # Check if the user is a coach for the team
+        team_user = get_object_or_404(Team_user, team=team, user=request.user)
+        if not team_user.isCoach:
+            messages.error(request, 'You are not allowed to add a game to this team.')
+            return redirect('team-details', teamID=team_id)
         
-        if form.is_valid():
-            new_team_game = form.save(commit=False)
-            new_team_game.team = team
-            new_team_game.save()
-            return redirect(f'/team-details/{team_id}')
-    else:
-        form = TeamGameForm()
+        if request.method == 'POST':
+            form = TeamGameForm(request.POST)
+            
+            if form.is_valid():
+                game = form.cleaned_data['game']
+                # Check if the game already exists for this team
+                if Team_game.objects.filter(team=team, game=game).exists():
+                    messages.error(request, 'This game is already added to the team.')
+                    return render(request, 'team/add_team_game.html', {
+                        'team': team,
+                        'form': form,
+                        'error_message': 'This game is already added to the team.'
+                    })
+                
+                new_team_game = form.save(commit=False)
+                new_team_game.team = team
+                new_team_game.save()
+                messages.success(request, 'Game successfully added to the team.')
+                return redirect('team-details', teamID=team_id)
+        else:
+            form = TeamGameForm()
 
-    return render(request, 'team/add_team_game.html', {
-        'team': team,
-        'form': form        
-    })
+        return render(request, 'team/add_team_game.html', {
+            'team': team,
+            'form': form
+        })
+        
+    except Exception as e:
+        messages.error(request, f'An unexpected error occurred: {str(e)}')
+        return redirect('team-details', teamID=team_id)
 
 # Add new time
 @login_required

@@ -16,7 +16,7 @@
     background-color: #1a1a1a;
     border-right: 2px solid #9c27b0;
     padding-top: 20px;
-    z-index: 1000;
+    /* z-index: 1000; */
 }
 
 .list-group {
@@ -40,6 +40,11 @@
 .list-group-item.active {
     background-color: #9c27b0 !important;
     border: none !important;
+}
+
+.card-header h2 {
+    color: #ffffff !important;
+    margin: 0;
 }
 
 /* Main content area */
@@ -108,15 +113,49 @@
     width: 100%;
 }
 
+.game-table h2 {
+    color: #ffffff;
+    margin-bottom: 1rem;
+}
+
+.game-table .btn-warning {
+    background-color: #9c27b0;
+    border-color: #9c27b0;
+    color: #ffffff;
+}
+
+.game-table .btn-warning:hover {
+    background-color: #ba68c8;
+    border-color: #ba68c8;
+    color: #ffffff;
+}
+
 /* Button styles */
-.btn-primary {
+.btn-success.home-style {
+    font-size: 1rem;
+    padding: 0.375rem 1rem;
+    transition: all 0.3s ease;
+    background-color: transparent !important;
+    border: 1px solid #ffffff !important;
+    color: #ffffff !important;
+}
+
+.btn-success.home-style:hover {
     background-color: #9c27b0 !important;
     border-color: #9c27b0 !important;
 }
 
+/* Regular button styles */
+.btn-primary {
+    background-color: #9c27b0 !important;
+    border-color: #9c27b0 !important;
+    transition: all 0.3s ease;
+}
+
 .btn-primary:hover {
-    background-color: #ba68c8 !important;
-    border-color: #ba68c8 !important;
+    background-color: transparent !important;
+    border-color: #ffffff !important;
+    color: #ffffff !important;
 }
 
 .btn-link {
@@ -126,6 +165,20 @@
 
 .btn-link:hover {
     color: #ba68c8 !important;
+}
+
+.btn-primary.home-style {
+    font-size: 1.2rem;
+    padding: 0.5rem 2rem;
+    transition: all 0.3s ease;
+    background-color: transparent !important;
+    border: 1px solid #ffffff !important;
+    color: #ffffff !important;
+}
+
+.btn-primary.home-style:hover {
+    background-color: #9c27b0 !important;
+    border-color: #9c27b0 !important;
 }
 
 /* Responsive adjustments */
