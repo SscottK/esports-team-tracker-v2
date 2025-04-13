@@ -1,79 +1,125 @@
 {% extends 'base.html' %} {% load static %} {% block head %}
-<title>ESTT - Add Member to Team</title>
+<title>ESTT - Add {% if is_coach %}Coach{% else %}Member{% endif %} to Team</title>
 <link
   rel="stylesheet"
   href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
 />
+<style>
+  .search-container {
+    position: relative;
+  }
+  .search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+  }
+  .search-result-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    color: black;
+  }
+  .search-result-item:hover {
+    background-color: #f8f9fa;
+  }
+</style>
 {% endblock %} {% block content %}
-<div class="container text-white">
-  <h2>Add Member to Team</h2>
+<div class="container text-white mt-5">
+  <h2>Add {% if is_coach %}Coach{% else %}Member{% endif %} to Team</h2>
   {% if error_message %}
   <div class="alert alert-danger" role="alert">{{ error_message }}</div>
   {% endif %}
-  <form method="post">
+  <form method="post" class="mt-4">
     {% csrf_token %}
     <div class="form-group">
-      {{ form.as_p }}
+      <label for="user-search">Search Users:</label>
+      <div class="search-container">
+        <input type="text" id="user-search" class="form-control" placeholder="Type to search users..." />
+        <div id="search-results" class="search-results"></div>
+      </div>
     </div>
     <input type="hidden" id="user-id" name="user" />
-    <button type="submit" class="btn btn-primary">Add User</button>
+    <div class="form-group mt-3">
+      <div class="form-check">
+        <input type="checkbox" class="form-check-input" id="is_coach" name="is_coach">
+        <label class="form-check-label" for="is_coach">Make this user a coach</label>
+      </div>
+    </div>
+    <div class="d-flex gap-2 mt-3">
+      <button type="submit" class="btn btn-primary">Add {% if is_coach %}Coach{% else %}User{% endif %}</button>
+      <a href="{% url 'team-details' teamID=team.id %}" class="btn btn-secondary">Cancel</a>
+    </div>
   </form>
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const searchInput = document.getElementById("user-search");
       const userIdInput = document.getElementById("user-id");
-      const resultsDropdown = document.createElement("div");
-      resultsDropdown.style.position = "absolute";
-      resultsDropdown.style.border = "1px solid #ccc";
-      resultsDropdown.style.backgroundColor = "#fff";
-      resultsDropdown.style.zIndex = "1000";
-      searchInput.parentNode.appendChild(resultsDropdown);
+      const resultsContainer = document.getElementById("search-results");
 
-      // Get the organization ID from the template context or a data attribute
-      const organizationId = "{{ org.id }}"; // Example: Assuming you pass organization.id from the view
+      // Get the organization ID from the template context
+      const organizationId = "{{ org.id }}";
+      console.log("Organization ID:", organizationId);
 
       searchInput.addEventListener("input", async () => {
         const query = searchInput.value;
+        console.log("Searching for:", query);
+        
         if (query.length < 1) {
-          resultsDropdown.innerHTML = "";
+          resultsContainer.style.display = "none";
           return;
         }
 
-        // Include the organization ID in the fetch request
-        const response = await fetch(
-          `/search-users/?q=${query}&organization_id=${organizationId}`
-        );
-        const users = await response.json();
+        try {
+          const response = await fetch(
+            `/search-users/?q=${query}&organization_id=${organizationId}`
+          );
+          const users = await response.json();
+          console.log("Found users:", users);
 
-        resultsDropdown.innerHTML = "";
-        users.forEach((user) => {
-          const option = document.createElement("div");
-          option.classList.add("dropdown-item"); // Bootstrap class for dropdown items
-          option.textContent = user.username;
-          option.style.cursor = "pointer";
-          option.addEventListener("click", () => {
-            searchInput.value = user.username;
-            userIdInput.value = user.id;
-            resultsDropdown.innerHTML = "";
-          });
-          resultsDropdown.appendChild(option);
-        });
+          resultsContainer.innerHTML = "";
+          if (users.length > 0) {
+            users.forEach((user) => {
+              const div = document.createElement("div");
+              div.className = "search-result-item";
+              div.textContent = user.username;
+              div.addEventListener("click", () => {
+                searchInput.value = user.username;
+                userIdInput.value = user.id;
+                resultsContainer.style.display = "none";
+              });
+              resultsContainer.appendChild(div);
+            });
+            resultsContainer.style.display = "block";
+          } else {
+            resultsContainer.style.display = "none";
+          }
+        } catch (error) {
+          console.error("Error searching users:", error);
+          resultsContainer.style.display = "none";
+        }
       });
 
-      // Bootstrap styling for the dropdown
+      // Hide results when clicking outside
+      document.addEventListener("click", (e) => {
+        if (!searchInput.contains(e.target) && !resultsContainer.contains(e.target)) {
+          resultsContainer.style.display = "none";
+        }
+      });
+
+      // Show results when focusing the input
       searchInput.addEventListener("focus", () => {
-        resultsDropdown.style.display = "block";
+        if (resultsContainer.innerHTML) {
+          resultsContainer.style.display = "block";
+        }
       });
-
-      searchInput.addEventListener("blur", () => {
-        setTimeout(() => {
-          resultsDropdown.style.display = "none";
-        }, 200); // Delay to allow click to register
-      });
-
-      resultsDropdown.classList.add("dropdown-menu"); // Bootstrap class for dropdown menu
-      resultsDropdown.style.display = "none"; // Initially hide the dropdown
     });
   </script>
 </div>

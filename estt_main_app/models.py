@@ -66,8 +66,8 @@ class Time(models.Model):
     #The level the time is for
     level = models.ForeignKey(Level, on_delete=models.CASCADE)
 
-    #the time for the level formated as 00:00.00
-    time = models.CharField(max_length=8)
+    #the time for the level formated as 00:00.000
+    time = models.CharField(max_length=9)
 
     #what it will return when being printed
     def __str__(self):
@@ -85,10 +85,10 @@ class Target_times(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
 
     #The fastest target time
-    high_target = models.CharField(max_length=8)
+    high_target = models.CharField(max_length=9)
 
     #The slowest target time
-    low_target = models.CharField(max_length=8)
+    low_target = models.CharField(max_length=9)
 
     #what it will return when being printed
     def __str__(self):

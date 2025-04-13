@@ -47,8 +47,16 @@
         required
       />
     </div>
-    <button type="submit" class="btn btn-primary">Add Time</button>
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary">Add Time</button>
+      <a href="{% url 'dashboard' %}" class="btn btn-secondary">Cancel</a>
+    </div>
   </form>
+
+  <!-- Cancel Button (Visible when no game selected) -->
+  <div class="mt-3" x-show="levels.length === 0">
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary">Cancel</a>
+  </div>
 
   <!-- Error Message -->
   <p x-show="errorMessage" style="color: red;" x-text="errorMessage"></p>
@@ -63,10 +71,19 @@
       async loadGames() {
         try {
           const response = await fetch("/api/new-time-get-games/");
-          if (!response.ok) throw new Error("Failed to fetch games.");
-          this.games = await response.json();
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.errors || "Failed to fetch games.");
+          }
+          const data = await response.json();
+          if (data.success) {
+            this.games = data.games;
+          } else {
+            throw new Error(data.errors || "Failed to fetch games.");
+          }
         } catch (error) {
           this.errorMessage = error.message;
+          console.error("Error loading games:", error);
         }
       },
       async loadLevels(gameId) {
@@ -76,35 +93,32 @@
         }
         try {
           const response = await fetch(`/api/get-levels/?game_id=${gameId}`);
-          if (!response.ok) throw new Error("Failed to fetch levels.");
-          this.levels = await response.json();
-          this.errorMessage = "";
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.errors || "Failed to fetch levels.");
+          }
+          const data = await response.json();
+          if (data.success) {
+            this.levels = data.levels;
+            this.errorMessage = "";
+          } else {
+            throw new Error(data.errors || "Failed to fetch levels.");
+          }
         } catch (error) {
           this.errorMessage = error.message;
+          console.error("Error loading levels:", error);
         }
       },
       async submitForm() {
-        const levelValue = document.querySelector('select[name="level"]')
-          .value;
+        const levelValue = document.querySelector('select[name="level"]').value;
         const timeValue = document.querySelector('input[name="time"]').value;
 
-        console.log("Level Value:", levelValue); // Log the selected level
-        console.log("Time Value:", timeValue); // Log the entered time
-
         const formData = new FormData(document.querySelector("form"));
-
         const gameId = document.querySelector("#games").value;
         formData.append("game", gameId);
         formData.append("level", levelValue);
         formData.append("time", timeValue);
-        console.log("Level:", formData.get("level"));
-        console.log("Time:", formData.get("time"));
 
-        // Debugging: Log the form data
-        for (const [key, value] of formData.entries()) {
-          console.log(`${key}: ${value}`);
-        }
-        console.log(this.levels);
         try {
           const response = await fetch("/add-time/", {
             method: "POST",
@@ -115,23 +129,19 @@
           if (response.ok && result.success) {
             this.showConfirmation();
           } else {
-            // Handle form errors
-            this.errorMessage = result.errors
-              ? Object.values(result.errors).flat().join("")
-              : "An unexpected error occurred.";
+            this.errorMessage = result.errors || "An unexpected error occurred.";
           }
         } catch (error) {
           this.errorMessage = "Failed to submit the form. Please try again.";
+          console.error("Error submitting form:", error);
         }
       },
       showConfirmation() {
-        if (
-          confirm("Time saved successfully! Would you like to add another?")
-        ) {
-          document.querySelector("form").reset(); // Reset form for new entry
-          this.levels = []; // Clear levels
+        if (confirm("Time saved successfully! Would you like to add another?")) {
+          document.querySelector("form").reset();
+          this.levels = [];
         } else {
-          window.location.href = "/dashboard/"; // Redirect to dashboard
+          window.location.href = "/dashboard/";
         }
       },
     };

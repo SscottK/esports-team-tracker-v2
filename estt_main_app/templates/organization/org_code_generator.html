@@ -4,8 +4,9 @@
 {% endblock %} {% block content %}
 <div class="container d-flex justify-content-center align-items-center text-white">
   <div class="code-generator justify-content-center text-center">
-    <div class="generate-button mb-3">
+    <div class="generate-button mb-3 d-flex gap-2 justify-content-center">
       <a href="{% url 'generate-code' org_id=org.id %}" class="btn btn-primary">Generate A Code</a>
+      <a href="{% url 'team-details' teamID=team.id %}" class="btn btn-secondary">Nevermind</a>
     </div>
     {% if error %}
     <p style="color: red">{{ error }}</p>

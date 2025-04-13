@@ -23,7 +23,10 @@
             {{ form_two.as_p}}  
               
         </div>
-        <button type="submit" class="btn btn-primary">Create Org</button>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Create Org</button>
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary">Cancel</a>
+        </div>
     </form>
 </div>
 {% endblock %}

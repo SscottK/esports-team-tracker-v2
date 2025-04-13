@@ -6,6 +6,10 @@
   integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
   crossorigin="anonymous"
 />
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+/>
 <script
   defer
   src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
@@ -68,9 +72,10 @@
           >
             <h2 class="mb-0">Games</h2>
             {% if team_user.isCoach %}
-            <a href="/add-game/{{ team.id }}/" class="btn btn-success"
-              >Add Game</a
-            >
+            <div>
+              <a href="/add-game/{{ team.id }}/" class="btn btn-success me-2">Add Game</a>
+              <a href="{% url 'upload_times' org_id=org.id team_id=team.id %}" class="btn btn-primary">Import Times</a>
+            </div>
             {% endif %}
           </div>
           <div class="card-body">
@@ -90,7 +95,7 @@
 
         <!-- Times Table (Initially Hidden) -->
         <div class="game-table-container mt-3" x-show="tableData">
-          <template x-if="tableData">
+          <template x-if="tableData && tableData.levels">
             <div x-show="tableData.levels.length > 0" class="game-table">
               <h2 x-text="tableData.game"></h2>
               <div
@@ -134,7 +139,7 @@
             </div>
           </template>
 
-          <template x-if="!tableData.levels.length">
+          <template x-if="!tableData || !tableData.levels || tableData.levels.length === 0">
             <div class="alert alert-warning">
               <p>No table data for this game - Please select another game</p>
             </div>
@@ -145,13 +150,32 @@
       <div x-show="activeSection === 'coaches'" class="mt-4">
         <!-- Added mb-4 -->
         <div class="card mb-4">
-          <div class="card-header">
+          <div class="card-header d-flex justify-content-between align-items-center">
             <h2>Coaches</h2>
+            {% if team_user.isCoach %}
+            <a href="{% url 'add_team_member' teamID=team.id org_id=org.id %}?is_coach=true" class="btn btn-primary btn-sm">Add Coach</a>
+            {% endif %}
           </div>
           <div class="card-body">
             <ul class="list-group">
               {% for member in members %} {% if member.isCoach %}
-              <li class="list-group-item">{{ member.user }}</li>
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ member.user }}
+                {% if team_user.isCoach and member.user != request.user %}
+                <div>
+                  <form method="post" action="{% url 'demote_coach' teamID=team.id userID=member.user.id %}" class="d-inline me-2">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning btn-sm">Demote to Player</button>
+                  </form>
+                  <form method="post" action="{% url 'remove_coach' teamID=team.id userID=member.user.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to remove this coach?')">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </form>
+                </div>
+                {% endif %}
+              </li>
               {% endif %} {% endfor %}
             </ul>
           </div>
@@ -165,14 +189,22 @@
             class="card-header d-flex justify-content-between align-items-center"
           >
             <h2>Members</h2>
-            <a href="/team/{{ team.id }}/{{ org.id }}/add-member" class="btn btn-primary btn-sm"
-              >Add Member</a
-            >
+            <a href="{% url 'add_team_member' teamID=team.id org_id=org.id %}" class="btn btn-primary btn-sm">Add Member</a>
           </div>
           <div class="card-body">
             <ul class="list-group">
               {% for member in members %} {% if not member.isCoach%}
-              <li class="list-group-item">{{ member.user }}</li>
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ member.user }}
+                {% if team_user.isCoach %}
+                <form method="post" action="{% url 'remove_team_member' teamID=team.id userID=member.user.id %}" class="d-inline">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to remove this member?')">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </form>
+                {% endif %}
+              </li>
               {% endif %} {% endfor %}
             </ul>
           </div>
@@ -220,9 +252,12 @@
             throw new Error(errorData.error || "Failed to fetch table data.");
           }
           this.tableData = await response.json();
+          console.log("Received table data:", this.tableData);
+          console.log("Times data:", this.tableData.times);
           this.tableData.game = `Tracked Data for ${this.tableData.game}`;
           this.errorMessage = "";
         } catch (error) {
+          console.error("Error loading table:", error);
           this.errorMessage = error.message;
         }
       },
@@ -235,7 +270,12 @@
       },
 
       getTime(levelId, userId) {
-        return this.tableData.times[`${levelId}-${userId}`] || "-";
+        const timeKey = `${levelId}-${userId}`;
+        console.log(`Looking for time with key: ${timeKey}`);
+        console.log("Available times:", this.tableData.times);
+        const time = this.tableData.times[timeKey] || "-";
+        console.log(`Found time: ${time}`);
+        return time;
       },
     };
   }
