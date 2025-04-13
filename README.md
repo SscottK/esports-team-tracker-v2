@@ -22,7 +22,7 @@ I built this app as a proof of concept for a buddy who runs Esports teams. He cu
 - Psychopg2-binary
 
 ###### &emsp; Database
-- PostgrSQL
+- PostgreSQL
 
 ## Future Plans
 - More types of games to be tracked
