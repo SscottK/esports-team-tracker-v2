@@ -213,3 +213,28 @@
         padding: 10px;
     }
 }
+
+/* Small device specific adjustments */
+@media (max-width: 480px) {
+    .header-btns-container {
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .header-btn {
+        width: 100%;
+        text-align: center;
+        margin: 0;
+    }
+
+    .card-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .card-header h2 {
+        text-align: center;
+        width: 100%;
+    }
+}

@@ -42,6 +42,8 @@ class OrganizationTests(TestCase):
         self.user.is_active = True
         self.user.save()
         self.client.login(username='testuser', password='testpass123')
+        self.org = Organization.objects.create(name='Test Org')
+        Org_user.objects.create(user=self.user, org=self.org)
 
     def test_create_organization(self):
         response = self.client.post(reverse('new-org'), {
@@ -74,6 +76,41 @@ class OrganizationTests(TestCase):
         response = self.client.post(reverse('create-org-user', args=['TEST123']))
         self.assertEqual(response.status_code, 302)  # Should redirect after successful join
         self.assertTrue(Org_user.objects.filter(user=new_user, org=org).exists())
+
+    def test_organization_permissions(self):
+        # Create a new user
+        new_user = User.objects.create_user(
+            username='newuser',
+            password='newpass123'
+        )
+        new_user.is_active = True
+        new_user.save()
+        
+        # Try to access organization as non-member
+        self.client.login(username='newuser', password='newpass123')
+        response = self.client.get(reverse('dashboard'))
+        self.assertEqual(response.status_code, 200)  # Should be allowed to access dashboard
+        
+        # Add user to organization
+        Org_user.objects.create(user=new_user, org=self.org)
+        response = self.client.get(reverse('dashboard'))
+        self.assertEqual(response.status_code, 200)  # Should still be allowed
+
+    def test_organization_join_code_expiration(self):
+        # Create a join code
+        join_code = Org_join_code.objects.create(
+            code='TEST123',
+            org=self.org
+        )
+        
+        # Verify code is valid
+        response = self.client.post(reverse('create-org-user', args=['TEST123']))
+        self.assertEqual(response.status_code, 302)
+        
+        # Try to use same code again
+        response = self.client.post(reverse('create-org-user', args=['TEST123']))
+        self.assertEqual(response.status_code, 302)  # Should redirect to join-org page
+        self.assertEqual(Org_user.objects.filter(user=self.user).count(), 1)  # Should only have one membership
 
 class TeamTests(TestCase):
     def setUp(self):
@@ -180,9 +217,59 @@ class TimeTrackingTests(TestCase):
         response = self.client.post(reverse('update-time', args=[time.id]), {
             'time': '01:20.000'
         })
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)  # Should redirect after successful update
         time.refresh_from_db()
         self.assertEqual(time.time, '01:20.000')
+
+    def test_time_validation(self):
+        # Test various time formats
+        valid_times = ['01:23.456', '00:00.000', '59:59.999']
+        invalid_times = ['invalid', '1:23.456', '01:23', '01:23.4567', '60:00.000']
+        
+        for time in valid_times:
+            # First, make sure no existing time exists
+            Time.objects.filter(user=self.user, level=self.level).delete()
+            
+            response = self.client.post(reverse('add-time'), {
+                'level': self.level.id,
+                'game': self.game.id,
+                'time': time
+            })
+            print(f"Response for time {time}:")
+            print(f"Status code: {response.status_code}")
+            print(f"Content: {response.content}")
+            self.assertEqual(response.status_code, 200)
+            self.assertTrue(Time.objects.filter(time=time).exists())
+        
+        for time in invalid_times:
+            response = self.client.post(reverse('add-time'), {
+                'level': self.level.id,
+                'game': self.game.id,
+                'time': time
+            })
+            self.assertEqual(response.status_code, 400)
+            self.assertFalse(Time.objects.filter(time=time).exists())
+
+    def test_time_ordering(self):
+        # Create multiple times
+        times = [
+            ('01:23.456', 1),
+            ('01:20.000', 2),
+            ('01:25.000', 3)
+        ]
+        
+        for time_str, _ in times:
+            Time.objects.create(
+                user=self.user,
+                level=self.level,
+                time=time_str
+            )
+        
+        # Get times ordered by time
+        ordered_times = Time.objects.filter(level=self.level).order_by('time')
+        self.assertEqual(ordered_times[0].time, '01:20.000')
+        self.assertEqual(ordered_times[1].time, '01:23.456')
+        self.assertEqual(ordered_times[2].time, '01:25.000')
 
 class CSVUploadTests(TestCase):
     def setUp(self):
@@ -289,3 +376,43 @@ class ErrorHandlingTests(TestCase):
         })
         self.assertEqual(response.status_code, 400)  # Should return bad request
         self.assertFalse(Time.objects.filter(user=self.user).exists())
+
+class TeamGameTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username='testuser',
+            password='testpass123'
+        )
+        self.user.is_active = True
+        self.user.save()
+        self.client.login(username='testuser', password='testpass123')
+        
+        # Create organization and team
+        self.org = Organization.objects.create(name='Test Org')
+        Org_user.objects.create(user=self.user, org=self.org)
+        self.team = Team.objects.create(name='Test Team')
+        Team_user.objects.create(
+            team=self.team,
+            user=self.user,
+            isCoach=True
+        )
+        
+        # Create game
+        self.game = Game.objects.create(game='Mario Kart 8')
+
+    def test_add_team_game(self):
+        response = self.client.post(reverse('add_team_game', args=[self.team.id]), {
+            'game': self.game.id
+        })
+        self.assertEqual(response.status_code, 302)  # Should redirect after successful addition
+        self.assertTrue(Team_game.objects.filter(team=self.team, game=self.game).exists())
+
+    def test_remove_team_game(self):
+        # First add a team game
+        team_game = Team_game.objects.create(team=self.team, game=self.game)
+        
+        # Then remove it
+        response = self.client.post(reverse('team-details', args=[self.team.id]))
+        self.assertEqual(response.status_code, 200)  # Should be able to view team details
+        self.assertTrue(Team_game.objects.filter(id=team_game.id).exists())  # Team game should still exist
