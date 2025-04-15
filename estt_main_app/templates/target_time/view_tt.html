@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% load static %}
+{% block head %}
+    <title>ESTT - View Target Times</title>
+{% endblock %}  
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-8 col-lg-6 text-center">
+            <h2 class="display-6 text-white">Target Times</h2>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card bg-dark text-white">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="card-title mb-0">{{ game.game }} Target Times</h4>
+                        <a href="{% url 'new-target-times' team.id game.id %}" class="btn btn-primary">Add Target Times</a>
+                    </div>
+                    
+                    {% if target_times %}
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Level</th>
+                                        <th>High Target</th>
+                                        <th>Low Target</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for tt in target_times %}
+                                        <tr>
+                                            <td>{{ tt.level.level_name }}</td>
+                                            <td>{{ tt.high_target }}</td>
+                                            <td>{{ tt.low_target }}</td>
+                                            <td>
+                                                <a href="{% url 'new-target-times' team.id game.id %}" class="btn btn-sm btn-primary">Edit</a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="mb-0">No target times set for this game yet.</p>
+                            <a href="{% url 'new-target-times' team.id game.id %}" class="btn btn-primary mt-3">Add First Target Time</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -82,6 +82,12 @@
                     class="btn btn-link"
                     x-text="game.game__game"
                   ></button>
+                  {% if user_is_coach %}
+                  <div class="btn-group">
+                    <a href="{% url 'new-target-times' team_id=team.id game_id=game.game_id %}" class="btn btn-primary">Add Target Times</a>
+                    <a href="{% url 'view-target-times' team_id=team.id game_id=game.game_id %}" class="btn btn-info">View Target Times</a>
+                  </div>
+                  {% endif %}
                 </li>
               </template>
             </ul>
@@ -97,16 +103,19 @@
                 <div
                   x-data="{ id: null }"
                   x-init="fetchId().then(result => id = result)"
+                  class="btn-group"
                 >
                   <a
-                    :href="
-                      id
-                        ? `/new-target-times/${tableData.team_id}/${tableData.game_id}/`
-                        : '#'
-                    "
+                    :href="`/team/${tableData.team_id}/game/${tableData.game_id}/target-times/new/`"
                     class="btn btn-warning"
                   >
                     Add Target Times
+                  </a>
+                  <a
+                    :href="`/team/${tableData.team_id}/game/${tableData.game_id}/target-times/`"
+                    class="btn btn-info"
+                  >
+                    View Target Times
                   </a>
                 </div>
               </div>

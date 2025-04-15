@@ -3,7 +3,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from .forms import CustomUserCreationForm, GameSuggestionForm
 from django.urls import reverse_lazy
-from .models import Team_user, Team, Team_game, Game, Level, Time, Organization, Org_user, Org_join_code, Org_team, GameSuggestion
+from .models import Team_user, Team, Team_game, Game, Level, Time, Organization, Org_user, Org_join_code, Org_team, GameSuggestion, Target_times
 from django.contrib.auth.models import User
 from django.views.generic.edit import CreateView, UpdateView
 from .forms import TeamUserForm, EditProfileForm, NewTeamForm, AddTeamUserOnTeamCreationForm, TeamGameForm, TimeCreationForm, TimeUpdateForm, TargetTimesCreationForm, NewOrganizationForm, AddOrgUserOnOrgCreationForm, CreateOrgJoinCode
@@ -658,6 +658,88 @@ def create_target_times(request, team_id, game_id):
         }
         
         if request.method == 'POST':
+            # Check if this is a CSV upload
+            if 'csv_upload' in request.POST:
+                if 'csv_file' not in request.FILES:
+                    messages.error(request, 'No CSV file uploaded.')
+                    return redirect('new-target-times', team_id=team_id, game_id=game_id)
+                
+                csv_file = request.FILES['csv_file']
+                if not csv_file.name.endswith('.csv'):
+                    messages.error(request, 'Please upload a CSV file.')
+                    return redirect('new-target-times', team_id=team_id, game_id=game_id)
+                
+                upload_errors = []
+                try:
+                    # Read CSV file
+                    csv_data = csv.reader(csv_file.read().decode('utf-8').splitlines())
+                    next(csv_data)  # Skip header row
+                    
+                    for row_num, row in enumerate(csv_data, start=2):  # Start from 2 to account for header
+                        if len(row) < 3:
+                            upload_errors.append(f"Row {row_num}: Invalid format - missing columns")
+                            continue
+                            
+                        level_name, high_target, low_target = row[:3]
+                        level_name = level_name.strip()
+                        high_target = high_target.strip()
+                        low_target = low_target.strip()
+                        
+                        # Validate time formats
+                        time_pattern = r'^\d{1,2}:\d{2}\.\d{2,3}$|^\d{1,2}:\d{2}\.\d{2}$'
+                        if not re.match(time_pattern, high_target) or not re.match(time_pattern, low_target):
+                            upload_errors.append(f"Row {row_num}: Invalid time format")
+                            continue
+                            
+                        # Normalize time format to MM:SS.mmm
+                        for time in [high_target, low_target]:
+                            if ':' in time:
+                                minutes, rest = time.split(':')
+                                if len(minutes) == 1:
+                                    time = f"0{minutes}:{rest}"
+                                if len(rest.split('.')[1]) == 2:
+                                    time = f"{time}0"
+                        
+                        # Find level
+                        try:
+                            level = Level.objects.get(level_name=level_name, game=game)
+                        except Level.DoesNotExist:
+                            # TODO: Add level suggestion feature
+                            upload_errors.append(f"Row {row_num}: Level '{level_name}' not found")
+                            continue
+                            
+                        # Create or update target time
+                        target_time, created = Target_times.objects.get_or_create(
+                            level=level,
+                            team=team,
+                            defaults={
+                                'high_target': high_target,
+                                'low_target': low_target
+                            }
+                        )
+                        
+                        if not created:
+                            target_time.high_target = high_target
+                            target_time.low_target = low_target
+                            target_time.save()
+                            
+                except Exception as e:
+                    upload_errors.append(f"Error processing CSV: {str(e)}")
+                
+                if upload_errors:
+                    form = TargetTimesCreationForm(initial=initial_data, game_id=game_id)
+                    form.fields['level'].queryset = levels
+                    return render(request, 'target_time/add_tt.html', {
+                        'form': form,
+                        'game': game,
+                        'team': team.id,
+                        'upload_errors': upload_errors
+                    })
+                
+                messages.success(request, 'Target times uploaded successfully.')
+                return redirect('team-details', teamID=team_id)
+            
+            # Handle single target time creation
             try:
                 # Validate form data
                 form = TargetTimesCreationForm(request.POST, initial=initial_data, game_id=game_id)
@@ -1514,3 +1596,35 @@ def manage_game_suggestions(request):
         'suggestions': suggestions,
         'search_query': search_query
     })
+
+@login_required
+def view_target_times(request, team_id, game_id):
+    try:
+        # Get team and game
+        team = get_object_or_404(Team, id=team_id)
+        game = get_object_or_404(Game, id=game_id)
+        
+        # Check if user is a team member
+        try:
+            team_user = Team_user.objects.get(team=team, user=request.user)
+        except Team_user.DoesNotExist:
+            messages.error(request, 'You are not a member of this team.')
+            return redirect('dashboard')
+        
+        # Get target times for this team and game
+        target_times = Target_times.objects.filter(
+            team=team,
+            level__game=game
+        ).select_related('level').order_by('level__level_name')
+        
+        context = {
+            'team': team,
+            'game': game,
+            'target_times': target_times,
+        }
+        
+        return render(request, 'target_time/view_tt.html', context)
+        
+    except Exception as e:
+        messages.error(request, f'An error occurred: {str(e)}')
+        return redirect('team-details', teamID=team_id)
