@@ -38,16 +38,15 @@
                             {{ form.low_target.label }}
                             {{ form.low_target|add_class:"form-control" }}
                         </div>
-                        <div class="d-flex justify-content-center gap-3 mt-4">
+                        <div class="d-flex justify-content-center mt-4">
                             <button type="submit" class="btn btn-primary px-4">Add Target Times</button>
-                            <a href="{% url 'team-details' teamID=team %}" class="btn btn-secondary px-4">Nevermind</a>
                         </div>
                     </form>
                 </div>
             </div>
 
             <!-- CSV Upload Card -->
-            <div class="card bg-dark text-white">
+            <div class="card bg-dark text-white mb-4">
                 <div class="card-body p-4">
                     <h4 class="card-title text-center mb-4">Upload Target Times via CSV</h4>
                     <form method="post" enctype="multipart/form-data" id="csv-upload-form">
@@ -57,9 +56,8 @@
                             <input type="file" class="form-control mb-2" id="csv_file" name="csv_file" accept=".csv">
                             <small class="form-text text-muted text-center d-block">Format: Level Name, High Target Time, Low Target Time</small>
                         </div>
-                        <div class="d-flex justify-content-center gap-3 mt-4">
+                        <div class="d-flex justify-content-center mt-4">
                             <button type="submit" class="btn btn-primary px-4" name="csv_upload">Upload CSV</button>
-                            <a href="{% url 'team-details' teamID=team %}" class="btn btn-secondary px-4">Nevermind</a>
                         </div>
                     </form>
                     {% if upload_errors %}
@@ -73,6 +71,11 @@
                         </div>
                     {% endif %}
                 </div>
+            </div>
+
+            <!-- Single Centered Nevermind Button -->
+            <div class="text-center mt-4">
+                <a href="{% url 'team-details' teamID=team %}" class="btn btn-secondary px-4">Nevermind</a>
             </div>
         </div>
     </div>

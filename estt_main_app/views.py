@@ -1628,3 +1628,39 @@ def view_target_times(request, team_id, game_id):
     except Exception as e:
         messages.error(request, f'An error occurred: {str(e)}')
         return redirect('team-details', teamID=team_id)
+
+@login_required
+def get_target_times(request, team_id, game_id):
+    try:
+        # Verify team membership
+        team = get_object_or_404(Team, id=team_id)
+        try:
+            Team_user.objects.get(team=team, user=request.user)
+        except Team_user.DoesNotExist:
+            return JsonResponse({'error': 'Not a team member'}, status=403)
+            
+        # Get target times for this team and game with level information
+        target_times = Target_times.objects.filter(
+            team=team,
+            level__game_id=game_id
+        ).select_related('level').values(
+            'level_id',
+            'level__level_name',
+            'high_target',
+            'low_target'
+        )
+        
+        # Convert to list and format the data
+        formatted_times = []
+        for tt in target_times:
+            formatted_times.append({
+                'level': tt['level_id'],
+                'level_name': tt['level__level_name'],
+                'high_target': tt['high_target'],
+                'low_target': tt['low_target']
+            })
+        
+        return JsonResponse(formatted_times, safe=False)
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)

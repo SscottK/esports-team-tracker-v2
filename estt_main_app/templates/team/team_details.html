@@ -15,6 +15,83 @@
   src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
 ></script>
 
+<style>
+  /* Higher specificity by including table selector */
+  table.table {
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #444;
+  }
+
+  table.table th,
+  table.table td {
+    border: 1px solid #444 !important;
+  }
+
+  /* Times table specific styles with maximum specificity */
+  table.table.times-table {
+    border: 1px solid #444 !important;
+  }
+
+  /* Prevent Bootstrap hover effects */
+  .table.times-table > :not(caption) > * > * {
+    background-color: transparent;
+  }
+
+  .table.times-table > tbody > tr:hover > * {
+    --bs-table-accent-bg: transparent !important;
+    --bs-table-striped-bg: transparent !important;
+    --bs-table-hover-bg: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  /* Base color classes with high specificity */
+  table.table td.time-fast {
+    background-color: #d4edda !important;
+    color: #155724 !important;
+    border-color: #444 !important;
+    transition: all 0.15s ease-in-out;
+  }
+
+  table.table td.time-medium {
+    background-color: #fff3cd !important;
+    color: #856404 !important;
+    border-color: #444 !important;
+    transition: all 0.15s ease-in-out;
+  }
+
+  table.table td.time-slow {
+    background-color: #f8d7da !important;
+    color: #721c24 !important;
+    border-color: #444 !important;
+    transition: all 0.15s ease-in-out;
+  }
+
+  /* Individual cell hover effects */
+  .table.times-table td:hover {
+    filter: brightness(0.85) !important;
+    cursor: pointer;
+    transform: scale(1.05);
+    box-shadow: 0 0 8px rgba(0,0,0,0.2);
+    z-index: 1;
+    position: relative;
+  }
+
+  /* Ensure colors persist on row hover */
+  .table.times-table > tbody > tr:hover > .time-fast {
+    background-color: #d4edda !important;
+  }
+
+  .table.times-table > tbody > tr:hover > .time-medium {
+    background-color: #fff3cd !important;
+  }
+
+  .table.times-table > tbody > tr:hover > .time-slow {
+    background-color: #f8d7da !important;
+  }
+</style>
+
 <title>ESTT - Team Details</title>
 {% endblock %} {% block content %}
 <div class="container-fluid" x-data="teamDetails()" x-init="loadGames({{ team.id }})">
@@ -100,11 +177,7 @@
             <div x-show="tableData.levels.length > 0" class="game-table">
               <div class="text-center mb-3">
                 <h2 x-text="tableData.game" class="mb-3"></h2>
-                <div
-                  x-data="{ id: null }"
-                  x-init="fetchId().then(result => id = result)"
-                  class="btn-group"
-                >
+                <div class="btn-group mb-4">
                   <a
                     :href="`/team/${tableData.team_id}/game/${tableData.game_id}/target-times/new/`"
                     class="btn btn-warning"
@@ -120,27 +193,56 @@
                 </div>
               </div>
 
-              <div class="table-responsive mt-3">
-                <table class="table table-bordered">
-                  <thead>
-                    <tr>
-                      <th>Level</th>
-                      <template x-for="user in tableData.users" :key="user.user">
-                        <th x-text="user.user__username"></th>
-                      </template>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <template x-for="level in tableData.levels" :key="level.id">
+              <div class="d-flex gap-4 justify-content-center" style="min-width: 0; width: 100%;">
+                <!-- Times Table -->
+                <div class="flex-grow-1 overflow-auto" style="min-width: 800px; max-width: 1200px;">
+                  <table class="table table-bordered mb-0 times-table" style="background-color: transparent;">
+                    <thead>
                       <tr>
-                        <td x-text="level.level_name"></td>
+                        <th style="min-width: 120px;">Level</th>
                         <template x-for="user in tableData.users" :key="user.user">
-                          <td x-text="getTime(level.id, user.user)"></td>
+                          <th style="min-width: 85px; max-width: 85px; white-space: nowrap;" x-text="user.user__username"></th>
                         </template>
                       </tr>
-                    </template>
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      <template x-for="level in tableData.levels" :key="level.id">
+                        <tr>
+                          <td style="min-width: 120px;" x-text="level.level_name"></td>
+                          <template x-for="user in tableData.users" :key="user.user">
+                            <td 
+                              class="text-center"
+                              :class="getTimeColorClass(getTime(level.id, user.user), level.id)"
+                              x-text="getTime(level.id, user.user)"
+                            ></td>
+                          </template>
+                        </tr>
+                      </template>
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Target Times Table -->
+                <div style="width: 300px;">
+                  <table class="table table-bordered mb-0" style="background-color: transparent;">
+                    <thead>
+                      <tr>
+                        <th>Level</th>
+                        <th style="white-space: nowrap;">High Target</th>
+                        <th style="white-space: nowrap;">Low Target</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <template x-for="level in tableData.levels" :key="level.id">
+                        <tr>
+                          <td x-text="level.level_name"></td>
+                          <td x-text="getTargetTime(level.id, 'high_target')"></td>
+                          <td x-text="getTargetTime(level.id, 'low_target')"></td>
+                        </tr>
+                      </template>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </template>
@@ -228,7 +330,39 @@
       activeSection: "games",
       games: [],
       tableData: null,
+      targetTimes: [],
       errorMessage: "",
+
+      // Convert time string to seconds for comparison
+      timeToSeconds(timeStr) {
+        if (!timeStr) return null;
+        const [mins, rest] = timeStr.split(':');
+        // Handle both .mmm and :mm formats
+        const [secs, ms] = rest.includes('.') ? rest.split('.') : rest.split(':');
+        const msValue = rest.includes('.') ? parseInt(ms) / 1000 : parseInt(ms) / 100;
+        return parseInt(mins) * 60 + parseInt(secs) + msValue;
+      },
+
+      // Get color class based on time comparison
+      getTimeColorClass(time, levelId) {
+        if (!time) return '';
+        const target = this.targetTimes.find(t => t.level === levelId);
+        if (!target || !target.high_target || !target.low_target) return '';
+
+        const timeSeconds = this.timeToSeconds(time);
+        const highTargetSeconds = this.timeToSeconds(target.high_target);
+        const lowTargetSeconds = this.timeToSeconds(target.low_target);
+
+        if (!timeSeconds || !highTargetSeconds || !lowTargetSeconds) return '';
+
+        if (timeSeconds < highTargetSeconds) {
+          return 'time-fast';
+        } else if (timeSeconds <= lowTargetSeconds) {
+          return 'time-medium';
+        } else {
+          return 'time-slow';
+        }
+      },
 
       async loadGames(teamId) {
         if (!teamId) {
@@ -259,9 +393,12 @@
             const errorData = await response.json();
             throw new Error(errorData.error || "Failed to fetch table data.");
           }
-          this.tableData = await response.json();
-          console.log("Received table data:", this.tableData);
-          console.log("Times data:", this.tableData.times);
+          const data = await response.json();
+          console.log('Received table data:', data);
+          
+          // Keep times as an object - no need to convert to array anymore
+          this.tableData = data;
+          await this.loadTargetTimes(this.tableData.team_id, gameId);
           this.tableData.game = `Tracked Data for ${this.tableData.game}`;
           this.errorMessage = "";
         } catch (error) {
@@ -269,21 +406,37 @@
           this.errorMessage = error.message;
         }
       },
-      async fetchId() {
-        return new Promise((resolve) => {
-          setTimeout(() => {
-            resolve(42); // Replace this with your real logic
-          }, 1000);
-        });
+
+      async loadTargetTimes(teamId, gameId) {
+        try {
+          const response = await fetch(`/api/target-times/${teamId}/${gameId}/`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch target times');
+          }
+          this.targetTimes = await response.json();
+          console.log('Loaded target times:', this.targetTimes);
+        } catch (error) {
+          console.error('Error loading target times:', error);
+          this.targetTimes = [];
+        }
       },
 
       getTime(levelId, userId) {
+        if (!this.tableData || !this.tableData.times) {
+          console.log('No tableData or times:', this.tableData);
+          return "";
+        }
+        
+        // Times are stored with keys like "levelId-userId"
         const timeKey = `${levelId}-${userId}`;
-        console.log(`Looking for time with key: ${timeKey}`);
-        console.log("Available times:", this.tableData.times);
-        const time = this.tableData.times[timeKey] || "-";
-        console.log(`Found time: ${time}`);
-        return time;
+        return this.tableData.times[timeKey] || "";
+      },
+
+      getTargetTime(levelId, type) {
+        const target = this.targetTimes.find(t => t.level === levelId);
+        if (!target) return '-';
+        const value = target[type];
+        return value || '-';
       },
     };
   }
