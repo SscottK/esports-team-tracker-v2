@@ -145,14 +145,40 @@ table.table td.time-fast {
   color: #fff;
 }
 
-.key-box.time-slow {
-  background-color: #dc3545;  /* Bold red */
+/* Time comparison styles */
+.time-fast {
+  background-color: #d4edda !important;  /* Green */
+  color: #155724 !important;
+  border-color: #444 !important;
 }
 
-.key-box.time-medium {
-  background-color: #fd7e14;  /* Bold orange */
+.time-medium {
+  background-color: #fff3cd !important;  /* Yellow */
+  color: #856404 !important;
+  border-color: #444 !important;
 }
 
-.key-box.time-fast {
-  background-color: #ffc107;  /* Bold yellow */
+.time-slow {
+  background-color: #f8d7da !important;  /* Red */
+  color: #721c24 !important;
+  border-color: #444 !important;
+}
+
+/* More specific selectors for color key boxes */
+.color-key .key-item .key-box.time-slow {
+  background-color: #f8d7da !important;  /* Red */
+  color: #721c24 !important;
+  border-color: #444 !important;
+}
+
+.color-key .key-item .key-box.time-medium {
+  background-color: #ffe5d0 !important;  /* Orange */
+  color: #fd7e14 !important;
+  border-color: #444 !important;
+}
+
+.color-key .key-item .key-box.time-fast {
+  background-color: #fff3cd !important;  /* Yellow */
+  color: #856404 !important;
+  border-color: #444 !important;
 } 

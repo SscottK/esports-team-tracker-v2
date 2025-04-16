@@ -61,4 +61,59 @@
 .role-member {
     background-color: rgba(40, 167, 69, 0.2);
     color: #28a745;
+}
+
+/* Team table styles */
+.team-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #444;
+}
+
+.team-table th,
+.team-table td {
+    border: 1px solid #444 !important;
+}
+
+.team-table > :not(caption) > * > * {
+    background-color: #1a1a1a !important;
+    color: #ffffff !important;
+}
+
+.team-table > tbody > tr:hover > * {
+    background-color: #2d2d2d !important;
+}
+
+/* Time ranking styles */
+.time-cell {
+    position: relative;
+    padding-right: 25px !important;
+    text-align: center;
+    height: 50px !important;
+    padding-bottom: 20px !important;
+}
+
+.ranking-number {
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.2em;
+    color: #ffffff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    line-height: 1.2;
+}
+
+/* Dark text for colored cells */
+.time-fast .ranking-number {
+    color: #155724;
+}
+
+.time-medium .ranking-number {
+    color: #856404;
+}
+
+.time-slow .ranking-number {
+    color: #721c24;
 } 

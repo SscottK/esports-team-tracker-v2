@@ -1,3 +1,4 @@
+/* Base styles */
 body {
     background-color: #2d2d2d !important; /* Dark grey background */
     color: #ffffff; /* White text */
@@ -17,6 +18,7 @@ a:hover {
     color: #ba68c8; /* Lighter purple on hover */
 }
 
+/* Navigation */
 .navbar {
     background-color: #1a1a1a !important;
     border-bottom: 2px solid #9c27b0;
@@ -58,6 +60,7 @@ a:hover {
     color: #9c27b0 !important;
 }
 
+/* Layout */
 .main-content-wrapper {
     flex: 1;
     width: 100%;
@@ -85,6 +88,7 @@ a:hover {
     min-width: 0;
 }
 
+/* Base components */
 .list-group-item {
     background-color: #1a1a1a !important;
     color: #ffffff !important;
@@ -194,6 +198,7 @@ a:hover {
     color: #ffffff !important; /* White text */
 }
 
+/* Responsive */
 @media (max-width: 992px) {
     .container-fluid {
         flex-direction: column;

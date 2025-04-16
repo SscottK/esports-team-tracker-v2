@@ -3,7 +3,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from .forms import CustomUserCreationForm, GameSuggestionForm
 from django.urls import reverse_lazy
-from .models import Team_user, Team, Team_game, Game, Level, Time, Organization, Org_user, Org_join_code, Org_team, GameSuggestion, Target_times
+from .models import Team_user, Team, Team_game, Game, Level, Time, Organization, Org_user, Org_join_code, Org_team, GameSuggestion, Target_times, Diamond_times
 from django.contrib.auth.models import User
 from django.views.generic.edit import CreateView, UpdateView
 from .forms import TeamUserForm, EditProfileForm, NewTeamForm, AddTeamUserOnTeamCreationForm, TeamGameForm, TimeCreationForm, TimeUpdateForm, TargetTimesCreationForm, NewOrganizationForm, AddOrgUserOnOrgCreationForm, CreateOrgJoinCode
@@ -1616,23 +1616,65 @@ def view_target_times(request, team_id, game_id):
             messages.error(request, 'You are not a member of this team.')
             return redirect('dashboard')
         
+        # Get all levels for this game
+        all_levels = Level.objects.filter(game=game).order_by('level_name')
+        print(f"Found {all_levels.count()} levels for game {game.game}")
+        
         # Get target times for this team and game
         target_times = Target_times.objects.filter(
             team=team,
             level__game=game
-        ).select_related('level').order_by('level__level_name')
+        ).select_related('level')
+        print(f"Found {target_times.count()} target times")
+        
+        # Get diamond times for this team and game
+        diamond_times = Diamond_times.objects.filter(
+            team=team,
+            level__game=game
+        ).select_related('level')
+        print(f"Found {diamond_times.count()} diamond times")
+        
+        # Create a list of all levels with their target times and diamond times
+        level_times = []
+        for level in all_levels:
+            # Get target time for this level
+            target_time = target_times.filter(level=level).first()
+            
+            # Get diamond time for this level
+            diamond_time = diamond_times.filter(level=level).first()
+            
+            level_times.append({
+                'level': level,
+                'high_target': target_time.high_target if target_time else '-',
+                'low_target': target_time.low_target if target_time else '-',
+                'diamond_target': diamond_time.diamond_target if diamond_time else '-'
+            })
+        
+        print(f"Created {len(level_times)} level times entries")
         
         context = {
             'team': team,
             'game': game,
-            'target_times': target_times,
+            'target_times': level_times,
         }
         
         return render(request, 'target_time/view_tt.html', context)
         
     except Exception as e:
-        messages.error(request, f'An error occurred: {str(e)}')
-        return redirect('team-details', teamID=team_id)
+        print(f"Error in view_target_times: {str(e)}")
+        # Only redirect for critical errors
+        if isinstance(e, (Team.DoesNotExist, Game.DoesNotExist)):
+            messages.error(request, f'An error occurred: {str(e)}')
+            return redirect('team-details', teamID=team_id)
+        else:
+            # For non-critical errors, show the page with an error message
+            messages.error(request, f'An error occurred: {str(e)}')
+            return render(request, 'target_time/view_tt.html', {
+                'team': team,
+                'game': game,
+                'target_times': [],
+                'error': str(e)
+            })
 
 @login_required
 def get_target_times(request, team_id, game_id):
@@ -1763,3 +1805,96 @@ def get_compare_data(request):
         print(f"Error in get_compare_data: {str(e)}")
         print(traceback.format_exc())
         return JsonResponse({'error': str(e)}, status=500)
+
+@login_required
+def upload_diamond_times(request, team_id, game_id):
+    try:
+        # Get team and game
+        team = get_object_or_404(Team, id=team_id)
+        game = get_object_or_404(Game, id=game_id)
+        
+        # Check if user is a team member and coach
+        try:
+            team_user = Team_user.objects.get(team=team, user=request.user)
+            if not team_user.isCoach:
+                messages.error(request, 'Only coaches can upload diamond times.')
+                return redirect('view-target-times', team_id=team_id, game_id=game_id)
+        except Team_user.DoesNotExist:
+            messages.error(request, 'You are not a member of this team.')
+            return redirect('dashboard')
+
+        if request.method == 'POST':
+            if 'csv_file' not in request.FILES:
+                messages.error(request, 'No CSV file uploaded.')
+                return redirect('upload-diamond-times', team_id=team_id, game_id=game_id)
+            
+            csv_file = request.FILES['csv_file']
+            if not csv_file.name.endswith('.csv'):
+                messages.error(request, 'Please upload a CSV file.')
+                return redirect('upload-diamond-times', team_id=team_id, game_id=game_id)
+            
+            upload_errors = []
+            try:
+                # Read CSV file
+                csv_data = csv.reader(csv_file.read().decode('utf-8').splitlines())
+                next(csv_data)  # Skip header row
+                
+                for row_num, row in enumerate(csv_data, start=2):  # Start from 2 to account for header
+                    if len(row) < 2:
+                        upload_errors.append(f"Row {row_num}: Invalid format - missing columns")
+                        continue
+                        
+                    level_name, diamond_time = row[:2]
+                    level_name = level_name.strip()
+                    diamond_time = diamond_time.strip()
+                    
+                    # Validate time format
+                    time_pattern = r'^\d{1,2}:\d{2}\.\d{2,3}$|^\d{1,2}:\d{2}\.\d{2}$'
+                    if not re.match(time_pattern, diamond_time):
+                        upload_errors.append(f"Row {row_num}: Invalid time format")
+                        continue
+                        
+                    # Normalize time format to MM:SS.mmm
+                    if ':' in diamond_time:
+                        minutes, rest = diamond_time.split(':')
+                        if len(minutes) == 1:
+                            diamond_time = f"0{minutes}:{rest}"
+                        if len(rest.split('.')[1]) == 2:
+                            diamond_time = f"{diamond_time}0"
+                    
+                    # Find level
+                    try:
+                        level = Level.objects.get(level_name=level_name, game=game)
+                    except Level.DoesNotExist:
+                        upload_errors.append(f"Row {row_num}: Level '{level_name}' not found")
+                        continue
+                        
+                    # Create or update diamond time
+                    Diamond_times.objects.update_or_create(
+                        level=level,
+                        team=team,
+                        defaults={'diamond_target': diamond_time}
+                    )
+                    
+            except Exception as e:
+                upload_errors.append(f"Error processing CSV: {str(e)}")
+            
+            if upload_errors:
+                for error in upload_errors:
+                    messages.error(request, error)
+                return render(request, 'target_time/upload_diamond_times.html', {
+                    'team': team,
+                    'game': game
+                })
+            
+            messages.success(request, 'Diamond times uploaded successfully.')
+            return redirect('view-target-times', team_id=team_id, game_id=game_id)
+            
+        return render(request, 'target_time/upload_diamond_times.html', {
+            'team': team,
+            'game': game
+        })
+        
+    except Exception as e:
+        messages.error(request, f'An error occurred: {str(e)}')
+        return redirect('view-target-times', team_id=team_id, game_id=game_id)

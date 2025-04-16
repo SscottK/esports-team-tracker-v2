@@ -171,3 +171,21 @@ class GameSuggestion(models.Model):
 
     def __str__(self):
         return self.game_name
+
+#Diamond Times for each level per team
+class Diamond_times(models.Model):
+    #The level the diamond time is for
+    level = models.ForeignKey(Level, on_delete=models.CASCADE)
+
+    #the Team the diamond time affects
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+
+    #The diamond target time
+    diamond_target = models.CharField(max_length=9)
+
+    #what it will return when being printed
+    def __str__(self):
+        return f"Diamond Time for {self.team.name}, {self.level.level_name}"
+
+    class Meta:
+        unique_together = ('level', 'team')  # Only one diamond time per level per team

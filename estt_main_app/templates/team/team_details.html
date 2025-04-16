@@ -161,18 +161,18 @@
                   ></button>
                   {% if user_is_coach %}
                   <div class="btn-group">
-                    <button 
-                      @click="showTargetTimeModal = true" 
+                    <a 
+                      href="{% url 'new-target-times' team_id=team.id game_id=game.game_id %}" 
                       class="btn times-action-btn"
                     >
                       Add Target Times
-                    </button>
-                    <button 
-                      @click="showViewTargetTimeModal = true" 
+                    </a>
+                    <a 
+                      href="{% url 'view-target-times' team_id=team.id game_id=game.game_id %}" 
                       class="btn times-action-btn"
                     >
                       View Target Times
-                    </button>
+                    </a>
                   </div>
                   {% endif %}
                 </li>
@@ -187,19 +187,19 @@
             <div x-show="tableData.levels.length > 0" class="game-table">
               <div class="text-center mb-3">
                 <h2 x-text="tableData.game" class="mb-3"></h2>
-                <div class="btn-group mb-4">
-                  <button 
-                    @click="showTargetTimeModal = true" 
+                <div class="btn-group mb-4" x-show="tableData && tableData.game_id">
+                  <a 
+                    :href="`/team/${tableData.team_id}/game/${tableData.game_id}/target-times/new/`" 
                     class="btn btn-warning"
                   >
                     Add Target Times
-                  </button>
-                  <button 
-                    @click="showViewTargetTimeModal = true" 
+                  </a>
+                  <a 
+                    :href="`/team/${tableData.team_id}/game/${tableData.game_id}/target-times/`" 
                     class="btn btn-info"
                   >
                     View Target Times
-                  </button>
+                  </a>
                   <a 
                     :href="`/time/${tableData.team_id}/game/${tableData.game_id}/compare/`"
                     class="btn btn-primary"
@@ -227,10 +227,12 @@
                           <td style="min-width: 120px;" x-text="level.level_name"></td>
                           <template x-for="user in tableData.users" :key="user.id">
                             <td 
-                              class="text-center"
+                              class="text-center time-cell"
                               :class="getTimeColorClass(getTime(level.id, user.id), level.id)"
-                              x-text="getTime(level.id, user.id)"
-                            ></td>
+                            >
+                              <span x-text="getTime(level.id, user.id)"></span>
+                              <span class="ranking-number" x-text="getTimeRank(level.id, user.id)"></span>
+                            </td>
                           </template>
                         </tr>
                       </template>
@@ -446,6 +448,53 @@
         // Times are stored with keys like "levelId-userId"
         const timeKey = `${levelId}-${userId}`;
         return this.tableData.times[timeKey] || "";
+      },
+
+      getTimeRank(levelId, userId) {
+        if (!this.tableData || !this.tableData.times) return "";
+        
+        // Get all times for this level
+        const levelTimes = this.tableData.users.map(user => {
+          const timeKey = `${levelId}-${user.id}`;
+          const time = this.tableData.times[timeKey];
+          return {
+            userId: user.id,
+            time: time,
+            seconds: this.timeToSeconds(time)
+          };
+        }).filter(entry => entry.seconds !== null);
+
+        // Sort by time (fastest first)
+        levelTimes.sort((a, b) => a.seconds - b.seconds);
+
+        // Find the rank for the current user
+        const rank = levelTimes.findIndex(entry => entry.userId === userId) + 1;
+        
+        // Get the user's time in seconds
+        const userTimeKey = `${levelId}-${userId}`;
+        const userTime = this.tableData.times[userTimeKey];
+        const userTimeSeconds = this.timeToSeconds(userTime);
+
+        // Check if time is within 10 seconds of diamond time
+        const target = this.targetTimes.find(t => t.level === levelId);
+        if (target && target.diamond_target && userTimeSeconds) {
+          const diamondTimeSeconds = this.timeToSeconds(target.diamond_target);
+          if (diamondTimeSeconds && userTimeSeconds <= diamondTimeSeconds + 10) {
+            return "💎";  // Show diamond for times within 10 seconds of diamond time
+          }
+        }
+        
+        // Return medal emoji for top 3, number for others
+        switch(rank) {
+          case 1:
+            return "🥇";
+          case 2:
+            return "🥈";
+          case 3:
+            return "🥉";
+          default:
+            return rank || "";
+        }
       },
 
       getTargetTime(levelId, type) {
