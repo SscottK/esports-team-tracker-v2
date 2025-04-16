@@ -190,6 +190,12 @@
                   >
                     View Target Times
                   </a>
+                  <a
+                    :href="`/time/${tableData.team_id}/game/${tableData.game_id}/compare/`"
+                    class="btn btn-primary"
+                  >
+                    Compare Times
+                  </a>
                 </div>
               </div>
 
@@ -200,8 +206,8 @@
                     <thead>
                       <tr>
                         <th style="min-width: 120px;">Level</th>
-                        <template x-for="user in tableData.users" :key="user.user">
-                          <th style="min-width: 85px; max-width: 85px; white-space: nowrap;" x-text="user.user__username"></th>
+                        <template x-for="user in tableData.users" :key="user.id">
+                          <th style="min-width: 85px; max-width: 85px; white-space: nowrap;" x-text="user.username"></th>
                         </template>
                       </tr>
                     </thead>
@@ -209,11 +215,11 @@
                       <template x-for="level in tableData.levels" :key="level.id">
                         <tr>
                           <td style="min-width: 120px;" x-text="level.level_name"></td>
-                          <template x-for="user in tableData.users" :key="user.user">
+                          <template x-for="user in tableData.users" :key="user.id">
                             <td 
                               class="text-center"
-                              :class="getTimeColorClass(getTime(level.id, user.user), level.id)"
-                              x-text="getTime(level.id, user.user)"
+                              :class="getTimeColorClass(getTime(level.id, user.id), level.id)"
+                              x-text="getTime(level.id, user.id)"
                             ></td>
                           </template>
                         </tr>

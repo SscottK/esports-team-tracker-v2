@@ -1,0 +1,342 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/team_detail.css' %}" />
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+  integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+  crossorigin="anonymous"
+/>
+<script
+  defer
+  src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+></script>
+
+<style>
+  .page-layout {
+    display: flex;
+  }
+
+  .sidebar {
+    width: 300px;
+    padding: 20px;
+  }
+
+  .main-content {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  .sidebar h1 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .game-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 2rem;
+  }
+
+  .member-select {
+    margin-bottom: 1.5rem;
+  }
+
+  .member-select label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+  }
+
+  /* Table Styles */
+  table.table {
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #444;
+    margin-top: 1rem;
+    width: 100%;
+    max-width: 900px;
+  }
+
+  table.table th,
+  table.table td {
+    border: 1px solid #444 !important;
+    padding: 8px;
+  }
+
+  table.table th {
+    min-width: 85px;
+    max-width: 85px;
+    white-space: nowrap;
+  }
+
+  table.table td.time-slow {
+    background-color: #f8d7da !important;
+    color: #721c24 !important;
+    border-color: #444 !important;
+    transition: all 0.15s ease-in-out;
+  }
+
+  table.table td.time-medium {
+    background-color: #ffe5d0 !important;
+    color: #fd7e14 !important;
+    border-color: #444 !important;
+    transition: all 0.15s ease-in-out;
+  }
+
+  table.table td.time-fast {
+    background-color: #fff3cd !important;
+    color: #856404 !important;
+    border-color: #444 !important;
+    transition: all 0.15s ease-in-out;
+  }
+
+  /* Individual cell hover effects */
+  .table td:hover {
+    filter: brightness(0.85) !important;
+    cursor: pointer;
+    transform: scale(1.05);
+    box-shadow: 0 0 8px rgba(0,0,0,0.2);
+    z-index: 1;
+    position: relative;
+    transition: all 0.15s ease-in-out;
+  }
+
+  /* Ensure colors persist on row hover */
+  .table > tbody > tr:hover > .time-slow {
+    background-color: #f8d7da !important;
+  }
+
+  .table > tbody > tr:hover > .time-medium {
+    background-color: #ffe5d0 !important;
+  }
+
+  .table > tbody > tr:hover > .time-fast {
+    background-color: #fff3cd !important;
+  }
+
+  /* Dark theme overrides */
+  .form-select {
+    background-color: #212529 !important;
+    color: #fff !important;
+    border-color: #444 !important;
+  }
+
+  .form-select:focus {
+    border-color: #444 !important;
+    box-shadow: 0 0 0 0.25rem rgba(66, 70, 73, 0.5) !important;
+  }
+
+  .sidebar h1, .game-title, .member-select label {
+    color: #fff !important;
+  }
+
+  /* Color Key Styles */
+  .color-key {
+    padding: 15px;
+    border: 1px solid #444;
+    border-radius: 5px;
+    background-color: rgba(0, 0, 0, 0.2);
+  }
+
+  .key-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .key-box {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+    border: 1px solid #444;
+    border-radius: 4px;
+  }
+
+  .key-text {
+    color: #fff;
+  }
+
+  .key-box.time-slow {
+    background-color: #f8d7da;
+  }
+
+  .key-box.time-medium {
+    background-color: #ffe5d0;
+  }
+
+  .key-box.time-fast {
+    background-color: #fff3cd;
+  }
+</style>
+
+<title>ESTT - Compare Times</title>
+{% endblock %}
+
+{% block content %}
+<div x-data="compareTimes()" x-init="loadData()">
+  <div class="page-layout">
+    <!-- Left Sidebar -->
+    <div class="sidebar">
+      <h1>Compare Times</h1>
+      <div class="game-title">Game: {{ game.game }}</div>
+      
+      <!-- Member Selection -->
+      <div class="member-select">
+        <label for="member1">First Member</label>
+        <select id="member1" class="form-select" x-model="member1" @change="updateComparison">
+          <option value="">Select First Member</option>
+          <template x-for="member in members" :key="member.id">
+            <option :value="member.id" x-text="member.username"></option>
+          </template>
+        </select>
+      </div>
+
+      <div class="member-select">
+        <label for="member2">Second Member</label>
+        <select id="member2" class="form-select" x-model="member2" @change="updateComparison">
+          <option value="">Select Second Member</option>
+          <template x-for="member in members" :key="member.id">
+            <option :value="member.id" x-text="member.username"></option>
+          </template>
+        </select>
+      </div>
+
+      <!-- Color Key Legend -->
+      <div class="color-key mt-4">
+        <h3 class="text-white mb-3">Color Key</h3>
+        <div class="key-item">
+          <span class="key-box time-slow"></span>
+          <span class="key-text">More than 10% slower</span>
+        </div>
+        <div class="key-item">
+          <span class="key-box time-medium"></span>
+          <span class="key-text">More than 5% slower</span>
+        </div>
+        <div class="key-item">
+          <span class="key-box time-fast"></span>
+          <span class="key-text">Within 5%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+      <div x-show="member1 && member2">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Level</th>
+              <th x-text="getMemberName(member1)"></th>
+              <th x-text="getMemberName(member2)"></th>
+              <th>Difference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="level in levels" :key="level.id">
+              <tr>
+                <td x-text="level.level_name"></td>
+                <td 
+                  class="text-center"
+                  :class="getTimeClass(level.id, member1, member2, '1')"
+                  x-text="getTime(level.id, member1)"
+                ></td>
+                <td 
+                  class="text-center"
+                  :class="getTimeClass(level.id, member2, member1, '2')"
+                  x-text="getTime(level.id, member2)"
+                ></td>
+                <td class="text-center" x-text="getDifference(level.id)"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function compareTimes() {
+    return {
+      members: [],
+      levels: [],
+      times: {},
+      member1: '',
+      member2: '',
+      memberNames: {},
+
+      async loadData() {
+        try {
+          const response = await fetch(`/api/compare-data/?game_id={{ game.id }}&team_id={{ team.id }}`);
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error('API Error:', errorData);
+            throw new Error(errorData.error || 'Failed to load data');
+          }
+          const data = await response.json();
+          console.log('Received data:', data);
+          
+          this.members = data.members;
+          this.levels = data.levels;
+          this.times = data.times;
+          this.memberNames = data.member_names;
+        } catch (error) {
+          console.error('Error loading data:', error);
+          alert('Error loading comparison data: ' + error.message);
+        }
+      },
+
+      getMemberName(memberId) {
+        return this.memberNames[memberId] || 'Unknown';
+      },
+
+      getTime(levelId, memberId) {
+        const key = `${levelId}-${memberId}`;
+        return this.times[key] || '-';
+      },
+
+      getTimeClass(levelId, memberId, compareId, position) {
+        const time1 = this.timeToSeconds(this.getTime(levelId, memberId));
+        const time2 = this.timeToSeconds(this.getTime(levelId, compareId));
+        
+        if (!time1 || !time2) return '';
+        
+        const diff = (time1 - time2) / time2 * 100;
+        if (diff > 10) return 'time-slow';
+        if (diff > 5) return 'time-medium';
+        return 'time-fast';
+      },
+
+      getDifference(levelId) {
+        const time1 = this.timeToSeconds(this.getTime(levelId, this.member1));
+        const time2 = this.timeToSeconds(this.getTime(levelId, this.member2));
+        
+        if (!time1 || !time2) return '-';
+        
+        const diff = ((time1 - time2) / time2 * 100).toFixed(1);
+        return `${Math.abs(diff)}%`;
+      },
+
+      timeToSeconds(timeStr) {
+        if (!timeStr || timeStr === '-') return null;
+        const [mins, rest] = timeStr.split(':');
+        const [secs, ms] = rest.includes('.') ? rest.split('.') : rest.split(':');
+        const msValue = rest.includes('.') ? parseInt(ms) / 1000 : parseInt(ms) / 100;
+        return parseInt(mins) * 60 + parseInt(secs) + msValue;
+      },
+
+      updateComparison() {
+        if (this.member1 && this.member2) {
+          // Table will update automatically due to reactivity
+        }
+      }
+    };
+  }
+</script>
+{% endblock %} 

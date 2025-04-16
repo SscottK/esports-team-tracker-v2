@@ -358,19 +358,24 @@ def get_table_data(request):
         except (Team_game.DoesNotExist, Game.DoesNotExist):
             return JsonResponse({"error": "Game not found"}, status=404)
             
-        # Get team members who are not coaches and are active, ordered by username
+        # Get team members
         team_members = Team_user.objects.filter(
-            team=team_game.team,
-            isCoach=False
-        ).order_by('user__username').values('user', 'user__username')
+            team_id=team_game.team.id,
+            isCoach=False  # Only get non-coach members
+        ).select_related('user')
+        if not team_members.exists():
+            return JsonResponse({'error': 'No team members found'}, status=404)
         
-        # Filter active members
+        # Filter active members and convert to serializable format
         active_members = []
         for member in team_members:
             try:
-                user = get_object_or_404(User, id=member['user'])
+                user = get_object_or_404(User, id=member.user.id)
                 if user.is_active:
-                    active_members.append(member)
+                    active_members.append({
+                        'id': user.id,
+                        'username': user.username
+                    })
             except User.DoesNotExist:
                 continue
                 
@@ -380,7 +385,7 @@ def get_table_data(request):
         # Get times for non-coach users
         times = Time.objects.filter(
             level__game=game,
-            user_id__in=[member['user'] for member in active_members]
+            user_id__in=[member['id'] for member in active_members]
         ).values('level_id', 'user_id', 'time')
         
         # Create time dictionary
@@ -388,7 +393,7 @@ def get_table_data(request):
         
         # Prepare response data
         response_data = {
-            'users': list(active_members),
+            'users': active_members,
             'levels': list(levels),
             'times': time_dict,
             'game': str(game),
@@ -1664,3 +1669,97 @@ def get_target_times(request, team_id, game_id):
         
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
+
+@login_required
+def compare_times(request, team_id, game_id):
+    team = get_object_or_404(Team, id=team_id)
+    game = get_object_or_404(Game, id=game_id)
+    
+    # Check if user is a member of the team
+    team_user = Team_user.objects.filter(team=team, user=request.user).first()
+    if not team_user:
+        return redirect('home')
+    
+    context = {
+        'team': team,
+        'game': game,
+    }
+    return render(request, 'time/compare_times.html', context)
+
+@login_required
+def get_compare_data(request):
+    try:
+        game_id = request.GET.get('game_id')
+        team_id = request.GET.get('team_id')
+        
+        if not game_id or not team_id:
+            return JsonResponse({'error': 'Missing game_id or team_id'}, status=400)
+            
+        try:
+            game_id = int(game_id)
+            team_id = int(team_id)
+        except (TypeError, ValueError):
+            return JsonResponse({'error': 'Invalid game_id or team_id format'}, status=400)
+        
+        # Get team members
+        team_members = Team_user.objects.filter(
+            team_id=team_id,
+            isCoach=False  # Only get non-coach members
+        ).select_related('user')
+        if not team_members.exists():
+            return JsonResponse({'error': 'No team members found'}, status=404)
+            
+        members = [{'id': member.user.id, 'username': member.user.username} for member in team_members]
+        
+        # Get game levels
+        levels = Level.objects.filter(game_id=game_id).values('id', 'level_name')
+        if not levels.exists():
+            return JsonResponse({'error': 'No levels found for this game'}, status=404)
+        
+        # Get all times for this game and team
+        times = {}
+        member_times = Time.objects.filter(
+            level__game_id=game_id,
+            user__in=[member.user for member in team_members]
+        ).select_related('user', 'level')
+        
+        for time in member_times:
+            key = f"{time.level.id}-{time.user.id}"
+            times[key] = time.time
+
+        # Get target times
+        target_times = Target_times.objects.filter(
+            team_id=team_id,
+            level__game_id=game_id
+        ).select_related('level')
+
+        # Add special "members" for high and low targets
+        members.extend([
+            {'id': 'high_target', 'username': 'High Target'},
+            {'id': 'low_target', 'username': 'Low Target'}
+        ])
+
+        # Add target times to times dictionary
+        for target in target_times:
+            times[f"{target.level.id}-high_target"] = target.high_target
+            times[f"{target.level.id}-low_target"] = target.low_target
+        
+        # Create member names mapping
+        member_names = {member.user.id: member.user.username for member in team_members}
+        member_names.update({
+            'high_target': 'High Target',
+            'low_target': 'Low Target'
+        })
+        
+        return JsonResponse({
+            'members': members,
+            'levels': list(levels),
+            'times': times,
+            'member_names': member_names
+        })
+        
+    except Exception as e:
+        import traceback
+        print(f"Error in get_compare_data: {str(e)}")
+        print(traceback.format_exc())
+        return JsonResponse({'error': str(e)}, status=500)

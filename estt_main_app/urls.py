@@ -38,4 +38,6 @@ urlpatterns = [
     path('team/<int:org_id>/<int:team_id>/upload/', views.upload_times, name='upload_times'),
     path('suggest-game/', views.suggest_game, name='suggest_game'),
     path('manage-game-suggestions/', views.manage_game_suggestions, name='manage-game-suggestions'),
+    path('time/<int:team_id>/game/<int:game_id>/compare/', views.compare_times, name='compare_times'),
+    path('api/compare-data/', views.get_compare_data, name='get_compare_data'),
 ]
