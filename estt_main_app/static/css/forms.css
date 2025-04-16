@@ -1,0 +1,54 @@
+/* Form control styles */
+.form-control {
+    background-color: rgba(33, 37, 41, 0.95);
+    border: 1px solid #6f2da8;
+    color: white;
+}
+
+.form-control:focus {
+    background-color: rgba(33, 37, 41, 0.95);
+    border-color: #9932cc;
+    color: white;
+    box-shadow: 0 0 0 0.2rem rgba(153, 50, 204, 0.25);
+}
+
+/* Table styles */
+.table-dark {
+    background-color: rgba(33, 37, 41, 0.95);
+    color: white;
+    border: 1px solid #6f2da8;
+}
+
+.table-dark th,
+.table-dark td {
+    border-color: #6f2da8;
+}
+
+/* Search functionality */
+.search-container {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: rgba(33, 37, 41, 0.95);
+    border: 1px solid #6f2da8;
+    border-radius: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.search-result-item {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    color: white;
+}
+
+.search-result-item:hover {
+    background-color: rgba(111, 45, 168, 0.2);
+} 

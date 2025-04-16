@@ -238,3 +238,15 @@
         width: 100%;
     }
 }
+
+.times-action-btn {
+    background-color: #9c27b0 !important;
+    color: white !important;
+    border: none !important;
+    padding: 8px 16px !important;
+}
+
+.times-action-btn:hover {
+    background-color: #ba68c8 !important;
+    color: white !important;
+}

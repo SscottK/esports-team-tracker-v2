@@ -48,21 +48,21 @@
 
   /* Base color classes with high specificity */
   table.table td.time-fast {
-    background-color: #d4edda !important;
+    background-color: #d4edda !important;  /* Green */
     color: #155724 !important;
     border-color: #444 !important;
     transition: all 0.15s ease-in-out;
   }
 
   table.table td.time-medium {
-    background-color: #fff3cd !important;
+    background-color: #fff3cd !important;  /* Yellow */
     color: #856404 !important;
     border-color: #444 !important;
     transition: all 0.15s ease-in-out;
   }
 
   table.table td.time-slow {
-    background-color: #f8d7da !important;
+    background-color: #f8d7da !important;  /* Red */
     color: #721c24 !important;
     border-color: #444 !important;
     transition: all 0.15s ease-in-out;
@@ -80,15 +80,15 @@
 
   /* Ensure colors persist on row hover */
   .table.times-table > tbody > tr:hover > .time-fast {
-    background-color: #d4edda !important;
+    background-color: #d4edda !important;  /* Green */
   }
 
   .table.times-table > tbody > tr:hover > .time-medium {
-    background-color: #fff3cd !important;
+    background-color: #fff3cd !important;  /* Yellow */
   }
 
   .table.times-table > tbody > tr:hover > .time-slow {
-    background-color: #f8d7da !important;
+    background-color: #f8d7da !important;  /* Red */
   }
 </style>
 
@@ -161,8 +161,18 @@
                   ></button>
                   {% if user_is_coach %}
                   <div class="btn-group">
-                    <a href="{% url 'new-target-times' team_id=team.id game_id=game.game_id %}" class="btn btn-primary">Add Target Times</a>
-                    <a href="{% url 'view-target-times' team_id=team.id game_id=game.game_id %}" class="btn btn-info">View Target Times</a>
+                    <button 
+                      @click="showTargetTimeModal = true" 
+                      class="btn times-action-btn"
+                    >
+                      Add Target Times
+                    </button>
+                    <button 
+                      @click="showViewTargetTimeModal = true" 
+                      class="btn times-action-btn"
+                    >
+                      View Target Times
+                    </button>
                   </div>
                   {% endif %}
                 </li>
@@ -178,19 +188,19 @@
               <div class="text-center mb-3">
                 <h2 x-text="tableData.game" class="mb-3"></h2>
                 <div class="btn-group mb-4">
-                  <a
-                    :href="`/team/${tableData.team_id}/game/${tableData.game_id}/target-times/new/`"
+                  <button 
+                    @click="showTargetTimeModal = true" 
                     class="btn btn-warning"
                   >
                     Add Target Times
-                  </a>
-                  <a
-                    :href="`/team/${tableData.team_id}/game/${tableData.game_id}/target-times/`"
+                  </button>
+                  <button 
+                    @click="showViewTargetTimeModal = true" 
                     class="btn btn-info"
                   >
                     View Target Times
-                  </a>
-                  <a
+                  </button>
+                  <a 
                     :href="`/time/${tableData.team_id}/game/${tableData.game_id}/compare/`"
                     class="btn btn-primary"
                   >
