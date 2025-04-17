@@ -1,6 +1,36 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<style>
+    .form-select, .form-control {
+        background-color: #212529 !important;
+        color: white !important;
+        border-color: #444 !important;
+    }
+
+    .form-select option {
+        background-color: #212529;
+        color: white;
+    }
+
+    /* Style for file input button */
+    .form-control[type="file"]::-webkit-file-upload-button {
+        background-color: #444;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        margin-right: 10px;
+    }
+
+    .form-control[type="file"]::file-selector-button {
+        background-color: #444;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        margin-right: 10px;
+    }
+</style>
+
 <div class="container mt-4">
     <div class="card card-dark">
         <div class="card-header card-header-gradient">

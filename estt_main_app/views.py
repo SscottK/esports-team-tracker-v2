@@ -1672,7 +1672,7 @@ def get_target_times(request, team_id, game_id):
         except Team_user.DoesNotExist:
             return JsonResponse({'error': 'Not a team member'}, status=403)
             
-        # Get target times for this team and game with level information
+        # Get target times and diamond times for this team and game with level information
         target_times = Target_times.objects.filter(
             team=team,
             level__game_id=game_id
@@ -1683,6 +1683,15 @@ def get_target_times(request, team_id, game_id):
             'low_target'
         )
         
+        # Get diamond times
+        diamond_times = {
+            dt['level_id']: dt['diamond_target'] 
+            for dt in Diamond_times.objects.filter(
+                team=team,
+                level__game_id=game_id
+            ).values('level_id', 'diamond_target')
+        }
+        
         # Convert to list and format the data
         formatted_times = []
         for tt in target_times:
@@ -1690,7 +1699,8 @@ def get_target_times(request, team_id, game_id):
                 'level': tt['level_id'],
                 'level_name': tt['level__level_name'],
                 'high_target': tt['high_target'],
-                'low_target': tt['low_target']
+                'low_target': tt['low_target'],
+                'diamond_target': diamond_times.get(tt['level_id'], None)
             })
         
         return JsonResponse(formatted_times, safe=False)

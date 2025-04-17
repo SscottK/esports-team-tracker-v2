@@ -143,6 +143,206 @@
   .bg-danger {
     background-color: #f8d7da !important;
   }
+
+  .time-cell .ranking-number {
+    display: inline-block;
+    margin-right: 2px;
+  }
+
+  .rank-display {
+    display: inline-block;
+    white-space: nowrap;
+  }
+
+  /* Update cell styles */
+  .times-table td {
+    padding: 2px 4px !important;
+    vertical-align: middle;
+  }
+
+  .times-table th {
+    padding: 4px !important;
+    vertical-align: middle;
+  }
+
+  .time-cell {
+    width: 70px !important;
+    line-height: 1.2;
+  }
+
+  .rank-display {
+    display: inline-block;
+    white-space: nowrap;
+    margin-left: 3px;
+  }
+
+  /* Target times table styles */
+  .table td, .table th {
+    padding: 2px 4px !important;
+    vertical-align: middle;
+    line-height: 1.2;
+  }
+
+  .table th {
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  .table td {
+    text-align: center;
+  }
+
+  /* Ensure consistent width for target times columns */
+  .table th:not(:first-child), 
+  .table td:not(:first-child) {
+    width: 70px !important;
+  }
+
+  /* Level name column */
+  .table th:first-child,
+  .table td:first-child {
+    min-width: 120px;
+    text-align: left;
+  }
+
+  /* Update table styles for exact matching */
+  .table td, .table th, .times-table td, .times-table th {
+    padding: 2px 4px !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    box-sizing: border-box !important;
+    white-space: nowrap !important;
+  }
+
+  .table td:not(:first-child), 
+  .table th:not(:first-child) {
+    width: 70px !important;
+    text-align: center;
+  }
+
+  .table td:first-child,
+  .table th:first-child {
+    min-width: 120px;
+    text-align: left;
+    padding-left: 8px !important;
+  }
+
+  .target-time-cell {
+    padding: 2px 4px !important;
+    vertical-align: middle !important;
+    width: 70px !important;
+    text-align: center !important;
+  }
+
+  .target-time-value {
+    display: block !important;
+    line-height: 1.2 !important;
+    margin: 0 !important;
+    padding-top: 0.6em !important;  /* Reduced from 1.2em to 0.6em to center better */
+    white-space: nowrap !important;
+  }
+
+  .target-time-placeholder {
+    display: none !important;
+  }
+
+  /* Remove any gap settings */
+  .game-table > div {
+    gap: 0 !important;
+  }
+
+  /* Ensure both tables have identical borders */
+  .table, .times-table {
+    border: 1px solid #444 !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+  }
+
+  .table td, .table th {
+    border: 1px solid #444 !important;
+  }
+
+  /* Remove any margins that might affect height */
+  .table > :not(caption) > * > * {
+    padding: 2px 4px !important;
+    margin: 0 !important;
+  }
+
+  /* Remove any other margins or padding that might interfere */
+  .target-times-section {
+    padding-left: 0 !important;
+    margin-top: 0 !important;
+  }
+
+  /* Reset any margins and gaps */
+  .game-table > div,
+  .game-table > div > div {
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 0 !important;
+  }
+
+  /* Update target times table cell styles */
+  .table td.target-time-cell {
+    padding: 2px 4px !important;
+    vertical-align: middle;
+    line-height: 1.2;
+  }
+
+  .target-time-value {
+    display: block;
+    line-height: 1.2;
+  }
+
+  .target-time-placeholder {
+    display: block;
+    height: 1.2em;
+    line-height: 1.2;
+  }
+
+  /* Update shared cell styles */
+  .time-cell, .target-time-cell {
+    width: 70px !important;
+    padding: 2px 4px !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+    height: 100% !important;  /* Make cell take full height */
+  }
+
+  .time-value, .target-time-value {
+    display: block !important;
+    line-height: 1.2 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  .rank-display {
+    display: block !important;
+    line-height: 1.2 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    white-space: nowrap !important;
+    height: 1.2em !important;
+  }
+
+  .target-time-placeholder {
+    display: block !important;
+    line-height: 1.2 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 1.2em !important;
+  }
+
+  /* Ensure both tables have same cell heights */
+  .time-cell, .target-time-cell {
+    height: 100% !important;
+    min-height: 3.6em !important;  /* Set minimum height to accommodate two lines plus padding */
+    box-sizing: border-box !important;
+  }
 </style>
 
 <title>ESTT - Team Details</title>
@@ -240,9 +440,9 @@
             <div x-show="tableData.levels.length > 0" class="game-table">
               <div class="text-center mb-3">
                 <h2 x-text="tableData.game" class="mb-3"></h2>
-                <div class="d-flex justify-content-center gap-4" style="width: 100%;">
-                  <!-- Times Table Section -->
-                  <div style="min-width: 920px;">
+                <div style="display: flex; justify-content: center; width: 100%; margin: 0; padding: 0;">
+                  <!-- Times Table Container -->
+                  <div style="margin: 0; padding: 0;">
                     <!-- Times Table Controls -->
                     <div class="d-flex align-items-center justify-content-center mb-2">
                       <div class="d-flex align-items-center">
@@ -283,8 +483,8 @@
                               <td style="min-width: 120px; padding: 0.5rem;" x-text="level.level_name"></td>
                               <template x-for="user in tableData.users" :key="user.id">
                                 <td class="text-center time-cell" style="width: 78px; padding: 0.5rem 0.25rem;" :class="getTimeColorClass(getTime(level.id, user.id), level.id)">
-                                  <span x-text="getTime(level.id, user.id)"></span>
-                                  <span class="ranking-number" x-text="getTimeRank(level.id, user.id)"></span>
+                                  <span class="time-value" x-text="getTime(level.id, user.id)"></span>
+                                  <span x-html="getTimeRank(level.id, user.id)"></span>
                                 </td>
                               </template>
                             </tr>
@@ -294,8 +494,8 @@
                     </div>
                   </div>
 
-                  <!-- Target Times Section -->
-                  <div style="min-width: 300px;">
+                  <!-- Target Times Container -->
+                  <div style="margin-left: 10px; padding: 0;">
                     <!-- Target Times Controls -->
                     <div class="d-flex align-items-center mb-2" x-show="tableData && tableData.game_id">
                       <a 
@@ -313,7 +513,6 @@
                     <table class="table table-bordered mb-0">
                       <thead>
                         <tr>
-                          <th>Level</th>
                           <th style="white-space: nowrap;">High Target</th>
                           <th style="white-space: nowrap;">Low Target</th>
                         </tr>
@@ -321,9 +520,14 @@
                       <tbody>
                         <template x-for="level in tableData.levels" :key="level.id">
                           <tr>
-                            <td x-text="level.level_name"></td>
-                            <td x-text="getTargetTime(level.id, 'high_target')"></td>
-                            <td x-text="getTargetTime(level.id, 'low_target')"></td>
+                            <td class="target-time-cell">
+                              <span class="target-time-value" x-text="getTargetTime(level.id, 'high_target')"></span>
+                              <span class="target-time-placeholder"></span>
+                            </td>
+                            <td class="target-time-cell">
+                              <span class="target-time-value" x-text="getTargetTime(level.id, 'low_target')"></span>
+                              <span class="target-time-placeholder"></span>
+                            </td>
                           </tr>
                         </template>
                       </tbody>
@@ -589,7 +793,6 @@
           }
           
           this.tableData = data;
-          console.log('About to load target times. Team ID:', this.tableData.team_id, 'Game ID:', gameId);
           await this.loadTargetTimes(this.tableData.team_id, gameId);
           this.tableData.game = `Member Times for ${this.tableData.game}`;
           this.errorMessage = "";
@@ -655,26 +858,36 @@
         const userTime = this.tableData.times[userTimeKey];
         const userTimeSeconds = this.timeToSeconds(userTime);
 
+        // Initialize result with rank emoji/number
+        let result = "";
+        switch(rank) {
+          case 1:
+            result = "🥇";
+            break;
+          case 2:
+            result = "🥈";
+            break;
+          case 3:
+            result = "🥉";
+            break;
+          default:
+            result = rank || "";
+        }
+
         // Check if time is within 10 seconds of diamond time
         const target = this.targetTimes.find(t => t.level === levelId);
         if (target && target.diamond_target && userTimeSeconds) {
           const diamondTimeSeconds = this.timeToSeconds(target.diamond_target);
           if (diamondTimeSeconds && userTimeSeconds <= diamondTimeSeconds + 10) {
-            return "💎";  // Show diamond for times within 10 seconds of diamond time
+            result = `<span class="rank-display">${result} 💎</span>`;  // Combine both in one span
+          } else {
+            result = `<span class="rank-display">${result}</span>`;
           }
+        } else {
+          result = `<span class="rank-display">${result}</span>`;
         }
         
-        // Return medal emoji for top 3, number for others
-        switch(rank) {
-          case 1:
-            return "🥇";
-          case 2:
-            return "🥈";
-          case 3:
-            return "🥉";
-          default:
-            return rank || "";
-        }
+        return result;
       },
 
       getTargetTime(levelId, type) {
