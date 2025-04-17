@@ -68,6 +68,21 @@
     transition: all 0.15s ease-in-out;
   }
 
+  /* Hover highlighting styles */
+  .table.times-table:not(.dragging) td.hover-highlight {
+    filter: brightness(0.85) !important;
+    z-index: 1;
+    position: relative;
+  }
+
+  .table.times-table:not(.dragging) tr.hover-row > td {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .table.times-table:not(.dragging) .hover-col {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
   /* Individual cell hover effects */
   .table.times-table td:hover {
     filter: brightness(0.85) !important;
@@ -89,6 +104,44 @@
 
   .table.times-table > tbody > tr:hover > .time-slow {
     background-color: #f8d7da !important;  /* Red */
+  }
+
+  /* Add these styles to the existing style block */
+  .times-table-wrapper {
+    cursor: grab;
+    user-select: none;
+    overflow-x: auto;
+  }
+
+  .times-table-wrapper.dragging {
+    cursor: grabbing;
+  }
+
+  .times-table-wrapper table {
+    pointer-events: auto;
+  }
+
+  .times-table-wrapper.dragging table {
+    pointer-events: none;
+  }
+
+  /* Add these styles to the existing style block */
+  .color-box {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+  }
+  
+  .bg-success {
+    background-color: #d4edda !important;
+  }
+  
+  .bg-warning {
+    background-color: #fff3cd !important;
+  }
+  
+  .bg-danger {
+    background-color: #f8d7da !important;
   }
 </style>
 
@@ -187,79 +240,95 @@
             <div x-show="tableData.levels.length > 0" class="game-table">
               <div class="text-center mb-3">
                 <h2 x-text="tableData.game" class="mb-3"></h2>
-                <div class="btn-group mb-4" x-show="tableData && tableData.game_id">
-                  <a 
-                    :href="`/team/${tableData.team_id}/game/${tableData.game_id}/target-times/new/`" 
-                    class="btn btn-warning"
-                  >
-                    Add Target Times
-                  </a>
-                  <a 
-                    :href="`/team/${tableData.team_id}/game/${tableData.game_id}/target-times/`" 
-                    class="btn btn-info"
-                  >
-                    View Target Times
-                  </a>
-                  <a 
-                    :href="`/time/${tableData.team_id}/game/${tableData.game_id}/compare/`"
-                    class="btn btn-primary"
-                  >
-                    Compare Times
-                  </a>
-                </div>
-              </div>
-
-              <div class="d-flex gap-4 justify-content-center" style="min-width: 0; width: 100%;">
-                <!-- Times Table -->
-                <div class="flex-grow-1 overflow-auto" style="min-width: 800px; max-width: 1200px;">
-                  <table class="table table-bordered mb-0 times-table" style="background-color: transparent;">
-                    <thead>
-                      <tr>
-                        <th style="min-width: 120px;">Level</th>
-                        <template x-for="user in tableData.users" :key="user.id">
-                          <th style="min-width: 85px; max-width: 85px; white-space: nowrap;" x-text="user.username"></th>
-                        </template>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <template x-for="level in tableData.levels" :key="level.id">
-                        <tr>
-                          <td style="min-width: 120px;" x-text="level.level_name"></td>
-                          <template x-for="user in tableData.users" :key="user.id">
-                            <td 
-                              class="text-center time-cell"
-                              :class="getTimeColorClass(getTime(level.id, user.id), level.id)"
-                            >
-                              <span x-text="getTime(level.id, user.id)"></span>
-                              <span class="ranking-number" x-text="getTimeRank(level.id, user.id)"></span>
-                            </td>
+                <div class="d-flex justify-content-center gap-4" style="width: 100%;">
+                  <!-- Times Table Section -->
+                  <div style="min-width: 920px;">
+                    <!-- Times Table Controls -->
+                    <div class="d-flex align-items-center justify-content-center mb-2">
+                      <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center">
+                          <div class="color-box bg-success"></div>
+                          <span class="ms-1">Fast</span>
+                        </div>
+                        <div class="d-flex align-items-center ms-3">
+                          <div class="color-box bg-warning"></div>
+                          <span class="ms-1">On Target</span>
+                        </div>
+                        <div class="d-flex align-items-center ms-3">
+                          <div class="color-box bg-danger"></div>
+                          <span class="ms-1">Needs Work</span>
+                        </div>
+                        <a 
+                          :href="`/time/${tableData.team_id}/game/${tableData.game_id}/compare/`"
+                          class="btn btn-primary ms-3"
+                          x-show="tableData && tableData.game_id"
+                          style="white-space: nowrap;"
+                        >Compare Times</a>
+                      </div>
+                    </div>
+                    <!-- Times Table -->
+                    <div class="times-table-wrapper">
+                      <table class="table table-bordered mb-0 times-table">
+                        <thead>
+                          <tr>
+                            <th style="min-width: 120px; padding: 0.5rem;">Level</th>
+                            <template x-for="user in tableData.users" :key="user.id">
+                              <th style="width: 78px; padding: 0.5rem 0.25rem; text-align: center;" x-text="user.username"></th>
+                            </template>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <template x-for="level in tableData.levels" :key="level.id">
+                            <tr>
+                              <td style="min-width: 120px; padding: 0.5rem;" x-text="level.level_name"></td>
+                              <template x-for="user in tableData.users" :key="user.id">
+                                <td class="text-center time-cell" style="width: 78px; padding: 0.5rem 0.25rem;" :class="getTimeColorClass(getTime(level.id, user.id), level.id)">
+                                  <span x-text="getTime(level.id, user.id)"></span>
+                                  <span class="ranking-number" x-text="getTimeRank(level.id, user.id)"></span>
+                                </td>
+                              </template>
+                            </tr>
                           </template>
-                        </tr>
-                      </template>
-                    </tbody>
-                  </table>
-                </div>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
 
-                <!-- Target Times Table -->
-                <div style="width: 300px;">
-                  <table class="table table-bordered mb-0" style="background-color: transparent;">
-                    <thead>
-                      <tr>
-                        <th>Level</th>
-                        <th style="white-space: nowrap;">High Target</th>
-                        <th style="white-space: nowrap;">Low Target</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <template x-for="level in tableData.levels" :key="level.id">
+                  <!-- Target Times Section -->
+                  <div style="min-width: 300px;">
+                    <!-- Target Times Controls -->
+                    <div class="d-flex align-items-center mb-2" x-show="tableData && tableData.game_id">
+                      <a 
+                        :href="`/team/${tableData.team_id}/game/${tableData.game_id}/target-times/new/`" 
+                        class="btn btn-warning"
+                        style="white-space: nowrap;"
+                      >Add Target Times</a>
+                      <a 
+                        :href="`/team/${tableData.team_id}/game/${tableData.game_id}/target-times/`" 
+                        class="btn btn-info ms-2"
+                        style="white-space: nowrap;"
+                      >View Target Times</a>
+                    </div>
+                    <!-- Target Times Table -->
+                    <table class="table table-bordered mb-0">
+                      <thead>
                         <tr>
-                          <td x-text="level.level_name"></td>
-                          <td x-text="getTargetTime(level.id, 'high_target')"></td>
-                          <td x-text="getTargetTime(level.id, 'low_target')"></td>
+                          <th>Level</th>
+                          <th style="white-space: nowrap;">High Target</th>
+                          <th style="white-space: nowrap;">Low Target</th>
                         </tr>
-                      </template>
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        <template x-for="level in tableData.levels" :key="level.id">
+                          <tr>
+                            <td x-text="level.level_name"></td>
+                            <td x-text="getTargetTime(level.id, 'high_target')"></td>
+                            <td x-text="getTargetTime(level.id, 'low_target')"></td>
+                          </tr>
+                        </template>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </div>
@@ -350,6 +419,105 @@
       tableData: null,
       targetTimes: [],
       errorMessage: "",
+      isDragging: false,
+      
+      init() {
+        this.$nextTick(() => {
+          this.setupTableInteractions();
+        });
+      },
+
+      setupTableInteractions() {
+        const wrapper = document.querySelector('.times-table-wrapper');
+        const table = wrapper?.querySelector('.times-table');
+        if (!wrapper || !table) return;
+
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+
+        const addHoverListeners = () => {
+          const cells = table.querySelectorAll('td');
+          cells.forEach(cell => {
+            cell.addEventListener('mouseenter', (e) => {
+              if (this.isDragging) return;
+              
+              // Find the row and column index
+              const row = cell.parentElement;
+              const rowIndex = Array.from(row.parentElement.children).indexOf(row);
+              const colIndex = Array.from(row.children).indexOf(cell);
+              
+              // Add hover classes
+              row.classList.add('hover-row');
+              const columnCells = table.querySelectorAll(`tr td:nth-child(${colIndex + 1})`);
+              columnCells.forEach(td => td.classList.add('hover-col'));
+              cell.classList.add('hover-highlight');
+            });
+
+            cell.addEventListener('mouseleave', (e) => {
+              if (this.isDragging) return;
+              
+              // Remove hover classes
+              table.querySelectorAll('.hover-row').forEach(el => el.classList.remove('hover-row'));
+              table.querySelectorAll('.hover-col').forEach(el => el.classList.remove('hover-col'));
+              table.querySelectorAll('.hover-highlight').forEach(el => el.classList.remove('hover-highlight'));
+            });
+          });
+        };
+
+        // Initial setup of hover listeners
+        addHoverListeners();
+
+        // Observe for changes in the table and reapply listeners
+        const observer = new MutationObserver(() => {
+          if (!this.isDragging) {
+            addHoverListeners();
+          }
+        });
+        observer.observe(table, { childList: true, subtree: true });
+
+        wrapper.addEventListener('mousedown', (e) => {
+          if (e.button !== 0) return; // Only handle left mouse button
+          isDown = true;
+          this.isDragging = true;
+          wrapper.classList.add('dragging');
+          wrapper.style.cursor = 'grabbing';
+          startX = e.pageX - wrapper.offsetLeft;
+          scrollLeft = wrapper.scrollLeft;
+        });
+
+        wrapper.addEventListener('mouseleave', () => {
+          if (isDown) {
+            isDown = false;
+            this.isDragging = false;
+            wrapper.classList.remove('dragging');
+            wrapper.style.cursor = 'grab';
+          }
+        });
+
+        wrapper.addEventListener('mouseup', () => {
+          if (isDown) {
+            isDown = false;
+            this.isDragging = false;
+            wrapper.classList.remove('dragging');
+            wrapper.style.cursor = 'grab';
+            // Re-enable hover effects after a short delay
+            setTimeout(() => {
+              if (!this.isDragging) {
+                addHoverListeners();
+              }
+            }, 50);
+          }
+        });
+
+        wrapper.addEventListener('mousemove', (e) => {
+          if (!isDown) return;
+          e.preventDefault();
+          const x = e.pageX - wrapper.offsetLeft;
+          const walk = (x - startX);
+          wrapper.scrollLeft = scrollLeft - walk;
+        });
+      },
 
       // Convert time string to seconds for comparison
       timeToSeconds(timeStr) {
@@ -406,6 +574,7 @@
           return;
         }
         try {
+          console.log('Loading table data for game:', gameId);
           const response = await fetch(`/api/table-data/?game_id=${gameId}`);
           if (!response.ok) {
             const errorData = await response.json();
@@ -414,10 +583,15 @@
           const data = await response.json();
           console.log('Received table data:', data);
           
-          // Keep times as an object - no need to convert to array anymore
+          // Sort users by ID before assigning to tableData
+          if (data.users) {
+            data.users.sort((a, b) => a.id - b.id);
+          }
+          
           this.tableData = data;
+          console.log('About to load target times. Team ID:', this.tableData.team_id, 'Game ID:', gameId);
           await this.loadTargetTimes(this.tableData.team_id, gameId);
-          this.tableData.game = `Tracked Data for ${this.tableData.game}`;
+          this.tableData.game = `Member Times for ${this.tableData.game}`;
           this.errorMessage = "";
         } catch (error) {
           console.error("Error loading table:", error);
@@ -426,13 +600,19 @@
       },
 
       async loadTargetTimes(teamId, gameId) {
+        console.log('loadTargetTimes called with:', { teamId, gameId });
         try {
-          const response = await fetch(`/api/target-times/${teamId}/${gameId}/`);
+          const url = `/api/target-times/${teamId}/${gameId}/`;
+          console.log('Fetching target times from:', url);
+          const response = await fetch(url);
+          console.log('Target times response status:', response.status);
           if (!response.ok) {
             throw new Error('Failed to fetch target times');
           }
-          this.targetTimes = await response.json();
-          console.log('Loaded target times:', this.targetTimes);
+          const data = await response.json();
+          console.log('Received target times data:', data);
+          this.targetTimes = data;
+          console.log('Updated targetTimes array:', this.targetTimes);
         } catch (error) {
           console.error('Error loading target times:', error);
           this.targetTimes = [];
@@ -498,10 +678,51 @@
       },
 
       getTargetTime(levelId, type) {
+        console.log('getTargetTime called with:', { levelId, type });
+        console.log('Current targetTimes:', this.targetTimes);
         const target = this.targetTimes.find(t => t.level === levelId);
+        console.log('Found target:', target);
         if (!target) return '-';
         const value = target[type];
+        console.log('Returning value:', value || '-');
         return value || '-';
+      },
+
+      initDragScroll() {
+        const wrapper = this.$el.querySelector('.times-table-wrapper');
+        if (!wrapper) return;
+
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+
+        wrapper.addEventListener('mousedown', (e) => {
+          isDown = true;
+          this.isDragging = true;
+          wrapper.style.cursor = 'grabbing';
+          startX = e.pageX - wrapper.offsetLeft;
+          scrollLeft = wrapper.scrollLeft;
+        });
+
+        wrapper.addEventListener('mouseleave', () => {
+          isDown = false;
+          this.isDragging = false;
+          wrapper.style.cursor = 'grab';
+        });
+
+        wrapper.addEventListener('mouseup', () => {
+          isDown = false;
+          this.isDragging = false;
+          wrapper.style.cursor = 'grab';
+        });
+
+        wrapper.addEventListener('mousemove', (e) => {
+          if (!isDown) return;
+          e.preventDefault();
+          const x = e.pageX - wrapper.offsetLeft;
+          const walk = (x - startX);
+          wrapper.scrollLeft = scrollLeft - walk;
+        });
       },
     };
   }

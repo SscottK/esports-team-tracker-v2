@@ -56,17 +56,17 @@
                                                 <div class="btn-group">
                                                     <form method="POST" action="{% url 'delete-target-times' team_id=team.id game_id=game.id level_id=tt.level.id %}" class="d-inline">
                                                         {% csrf_token %}
-                                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete these target times?')">
+                                                        <button type="submit" class="btn btn-danger btn-sm me-2" onclick="return confirm('Are you sure you want to delete these target times?')">
                                                             <i class="fas fa-trash"></i> Delete Target Times
                                                         </button>
                                                     </form>
                                                     {% if tt.diamond_target != '-' %}
-                                                    <form method="POST" action="{% url 'delete-diamond-times' team_id=team.id game_id=game.id level_id=tt.level.id %}" class="d-inline ms-2">
-                                                        {% csrf_token %}
-                                                        <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Are you sure you want to delete the diamond time?')">
-                                                            <i class="fas fa-trash"></i> Delete Diamond Time
-                                                        </button>
-                                                    </form>
+                                                        <form method="POST" action="{% url 'delete-diamond-times' team_id=team.id game_id=game.id level_id=tt.level.id %}" class="d-inline">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Are you sure you want to delete the diamond time?')">
+                                                                <i class="fas fa-trash"></i> Delete Diamond Time
+                                                            </button>
+                                                        </form>
                                                     {% endif %}
                                                 </div>
                                             </td>

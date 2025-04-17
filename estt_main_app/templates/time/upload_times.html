@@ -37,6 +37,49 @@
                     <a href="{% url 'team-details' teamID=team.id %}" class="btn btn-secondary">Nevermind</a>
                 </div>
             </form>
+
+            {% if empty_lines or parse_errors or skipped_users %}
+                <div class="mt-4">
+                    {% if empty_lines %}
+                        <div class="alert alert-info">
+                            <h5 class="mb-3">Empty Lines (Skipped):</h5>
+                            <ul class="mb-0">
+                                {% for line in empty_lines %}
+                                    <li>Line {{ line }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    {% if parse_errors %}
+                        <div class="alert alert-danger">
+                            <h5 class="mb-3">Parse Errors:</h5>
+                            <ul class="mb-0">
+                                {% for error in parse_errors %}
+                                    <li>Line {{ error.line }}: {{ error.error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    {% if skipped_users.not_found or skipped_users.not_in_team or skipped_users.inactive %}
+                        <div class="alert alert-warning">
+                            <h5 class="mb-3">Skipped Users:</h5>
+                            <ul class="mb-0">
+                                {% if skipped_users.not_found %}
+                                    <li>Users not found: {{ skipped_users.not_found|join:", " }}</li>
+                                {% endif %}
+                                {% if skipped_users.not_in_team %}
+                                    <li>Users not in team: {{ skipped_users.not_in_team|join:", " }}</li>
+                                {% endif %}
+                                {% if skipped_users.inactive %}
+                                    <li>Inactive users: {{ skipped_users.inactive|join:", " }}</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
             
             <div class="mt-4">
                 <h4>Instructions:</h4>

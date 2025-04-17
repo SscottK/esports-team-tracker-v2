@@ -118,6 +118,63 @@
     margin-bottom: 1rem;
 }
 
+/* Times table wrapper for horizontal scrolling */
+.times-table-wrapper {
+    position: relative;
+    overflow-x: auto;
+    margin: 0 auto;
+    max-width: 100%;
+}
+
+/* Fixed first column styles */
+.times-table {
+    position: relative;
+}
+
+.times-table th:first-child,
+.times-table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background-color: #1a1a1a;
+    border-right: 2px solid #9c27b0;
+}
+
+.times-table th:first-child {
+    z-index: 3;
+}
+
+/* Ensure the fixed column has a shadow to show depth */
+.times-table th:first-child::after,
+.times-table td:first-child::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: -2px;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(90deg, rgba(156,39,176,0.5) 0%, rgba(156,39,176,0) 100%);
+}
+
+.times-table-wrapper table {
+    margin-bottom: 0;
+    width: auto;
+}
+
+.times-table-wrapper thead {
+    position: relative;
+    background-color: #1a1a1a;
+}
+
+.times-table-wrapper tbody {
+    display: table-row-group;
+}
+
+.times-table-wrapper thead tr,
+.times-table-wrapper tbody tr {
+    display: table-row;
+}
+
 .game-table .btn-warning {
     background-color: #9c27b0;
     border-color: #9c27b0;

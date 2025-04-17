@@ -60,14 +60,30 @@
                             <button type="submit" class="btn btn-primary px-4" name="csv_upload">Upload CSV</button>
                         </div>
                     </form>
-                    {% if upload_errors %}
-                        <div class="alert alert-danger mt-4" role="alert">
-                            <h5 class="text-center mb-3">Upload Errors:</h5>
-                            <ul class="mb-0 list-unstyled">
-                                {% for error in upload_errors %}
-                                    <li class="text-center">{{ error }}</li>
-                                {% endfor %}
-                            </ul>
+
+                    {% if upload_errors or empty_lines %}
+                        <div class="mt-4">
+                            {% if empty_lines %}
+                                <div class="alert alert-info">
+                                    <h5 class="mb-3">Empty Lines (Skipped):</h5>
+                                    <ul class="mb-0">
+                                        {% for line in empty_lines %}
+                                            <li>Line {{ line }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            {% endif %}
+
+                            {% if upload_errors %}
+                                <div class="alert alert-danger">
+                                    <h5 class="mb-3">Errors:</h5>
+                                    <ul class="mb-0">
+                                        {% for error in upload_errors %}
+                                            <li>Line {{ error.line }}: {{ error.error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            {% endif %}
                         </div>
                     {% endif %}
                 </div>

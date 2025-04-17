@@ -1,6 +1,41 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<style>
+    .form-control[type="file"] {
+        background-color: #2b2b2b;
+        color: white !important;
+        border-color: #444;
+    }
+    
+    .form-control[type="file"]::file-selector-button {
+        background-color: #444;
+        color: white;
+        border: 1px solid #666;
+    }
+
+    .form-control[type="file"]:hover::file-selector-button {
+        background-color: #555;
+    }
+
+    /* Force white text for the file input and its placeholder */
+    input[type="file"]::before,
+    input[type="file"]::-webkit-file-upload-button,
+    input[type="file"]::file-selector-button {
+        color: white;
+    }
+
+    /* Ensure the "No file chosen" text is white */
+    .form-control[type="file"]:lang(en)::before {
+        color: white;
+    }
+
+    /* Make the help text white */
+    .form-text {
+        color: white !important;
+    }
+</style>
+
 <div class="container mt-4">
     <div class="card card-dark">
         <div class="card-header card-header-gradient">
@@ -34,6 +69,32 @@
                     <a href="{% url 'view-target-times' team_id=team.id game_id=game.id %}" class="btn btn-secondary">Nevermind</a>
                 </div>
             </form>
+
+            {% if upload_errors or empty_lines %}
+                <div class="mt-4">
+                    {% if empty_lines %}
+                        <div class="alert alert-info">
+                            <h5 class="mb-3">Empty Lines (Skipped):</h5>
+                            <ul class="mb-0">
+                                {% for line in empty_lines %}
+                                    <li>Line {{ line }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    {% if upload_errors %}
+                        <div class="alert alert-danger">
+                            <h5 class="mb-3">Errors:</h5>
+                            <ul class="mb-0">
+                                {% for error in upload_errors %}
+                                    <li>Line {{ error.line }}: {{ error.error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>

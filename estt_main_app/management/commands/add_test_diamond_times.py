@@ -5,10 +5,8 @@ class Command(BaseCommand):
     help = 'Adds test diamond times for testing purposes'
 
     def handle(self, *args, **options):
-        # Get or create test game and levels
-        game, _ = Game.objects.get_or_create(game="Test Game")
-        level1, _ = Level.objects.get_or_create(level_name="Level 1", game=game)
-        level2, _ = Level.objects.get_or_create(level_name="Level 2", game=game)
+        # Get or create MK8 game
+        game, _ = Game.objects.get_or_create(game='Mario Kart 8 Deluxe')
         
         # Get the first team
         team = Team.objects.first()
@@ -16,17 +14,25 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR('No teams found. Please create a team first.'))
             return
 
-        # Create test diamond times
-        Diamond_times.objects.get_or_create(
-            team=team,
-            level=level1,
-            defaults={'diamond_target': '01:40.000'}  # 1:40.000
-        )
-        
-        Diamond_times.objects.get_or_create(
-            team=team,
-            level=level2,
-            defaults={'diamond_target': '02:30.000'}  # 2:30.000
-        )
+        # Define levels and their diamond times
+        level_times = {
+            "Mario Kart Stadium": "01:42.119",
+            "Water Park": "01:45.258", 
+            "Sweet Sweet Canyon": "01:50.373",
+            "Thwomp Ruins": "01:55.250"
+        }
+
+        # Create diamond times for each level
+        for level_name, time in level_times.items():
+            level = Level.objects.filter(game=game, level_name=level_name).first()
+            if level:
+                Diamond_times.objects.get_or_create(
+                    team=team,
+                    level=level,
+                    defaults={'diamond_target': time}
+                )
+                self.stdout.write(f'Added diamond time for {level_name}: {time}')
+            else:
+                self.stdout.write(self.style.WARNING(f'Level not found: {level_name}'))
 
         self.stdout.write(self.style.SUCCESS('Successfully added test diamond times')) 
