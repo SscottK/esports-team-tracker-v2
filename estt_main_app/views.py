@@ -1018,53 +1018,64 @@ def generate_join_code(request, org_id):
 #join code index
 def join_codes(request, org_id):
     try:
-        print(f"Starting join_codes view with org_id: {org_id}")
+        print(f"[DEBUG] Starting join_codes view with org_id: {org_id}")
         
         # Validate organization ID
         if not org_id:
-            print("No org_id provided")
+            print("[DEBUG] No org_id provided")
             messages.error(request, 'Organization ID is required.')
             return redirect('dashboard')
             
         try:
             org_id = int(org_id)
-            print(f"Converted org_id to int: {org_id}")
+            print(f"[DEBUG] Converted org_id to int: {org_id}")
         except (TypeError, ValueError):
-            print("Invalid org_id format")
+            print("[DEBUG] Invalid org_id format")
             messages.error(request, 'Invalid organization ID format.')
             return redirect('dashboard')
         
         # Get organization with error handling
         try:
             org = get_object_or_404(Organization, id=org_id)
-            print(f"Found organization: {org.name}")
+            print(f"[DEBUG] Found organization: {org.name}")
         except Organization.DoesNotExist:
-            print("Organization not found")
+            print("[DEBUG] Organization not found")
             messages.error(request, 'Organization not found.')
             return redirect('dashboard')
             
         # Check if user is a member of the organization
         try:
             org_user = get_object_or_404(Org_user, org=org, user=request.user)
-            print(f"Found org_user for {request.user.username}")
+            print(f"[DEBUG] Found org_user for {request.user.username}")
         except Org_user.DoesNotExist:
-            print(f"User {request.user.username} is not a member of org {org.name}")
+            print(f"[DEBUG] User {request.user.username} is not a member of org {org.name}")
             messages.error(request, 'You are not a member of this organization.')
             return redirect('dashboard')
         
-        # Get the user's team in this organization using org_team relationship
-        team = Team.objects.filter(org_team__org=org, team_user__user=request.user).first()
-        print(f"Team query result: {team}")
+        # First get all teams the user is a member of
+        user_teams = Team.objects.filter(team_user__user=request.user)
+        print(f"[DEBUG] Found {user_teams.count()} teams for user")
+        
+        # Then check which of these teams belong to the organization
+        team = None
+        for user_team in user_teams:
+            if Org_team.objects.filter(team=user_team, org=org).exists():
+                team = user_team
+                break
+                
+        print(f"[DEBUG] Team found in organization: {team}")
+        
         if not team:
-            print(f"No team found for user {request.user.username} in org {org.name}")
+            print(f"[DEBUG] No team found for user {request.user.username} in org {org.name}")
             messages.error(request, 'You are not a member of any team in this organization.')
             return redirect('dashboard')
         
         # Get join code if it exists
         code = Org_join_code.objects.filter(org=org).first()
-        print(f"Join code query result: {code}")
+        print(f"[DEBUG] Join code query result: {code}")
             
         # Always render the template, whether code exists or not
+        print("[DEBUG] Rendering template with code, org, and team")
         return render(request, 'organization/org_code_generator.html', {
             'code': code,
             'org': org,
@@ -1072,7 +1083,10 @@ def join_codes(request, org_id):
         })
             
     except Exception as e:
-        print(f"Unexpected error: {str(e)}")
+        print(f"[DEBUG] Unexpected error: {str(e)}")
+        print(f"[DEBUG] Full error details: ", e.__class__.__name__)
+        import traceback
+        print("[DEBUG] Traceback: ", traceback.format_exc())
         messages.error(request, f'An unexpected error occurred: {str(e)}')
         return redirect('dashboard')
     
