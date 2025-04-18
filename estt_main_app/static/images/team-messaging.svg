@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- First Chat Bubble -->
+    <path d="M15 25 Q15 15 25 15 L45 15 Q55 15 55 25 L55 35 Q55 45 45 45 L35 45 L25 55 L25 45 Q15 45 15 35 Z" 
+        fill="#2d1f3d" stroke="#9c27b0" stroke-width="2"/>
+    
+    <!-- Second Chat Bubble -->
+    <path d="M25 35 Q25 25 35 25 L55 25 Q65 25 65 35 L65 45 Q65 55 55 55 L45 55 L35 65 L35 55 Q25 55 25 45 Z" 
+        fill="#2d1f3d" stroke="#6f2da8" stroke-width="2"/>
+    
+    <!-- Notification Dots -->
+    <circle cx="35" cy="40" r="3" fill="#9c27b0">
+        <animate attributeName="opacity" values="1;0.2;1" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="45" cy="40" r="3" fill="#9c27b0">
+        <animate attributeName="opacity" values="1;0.2;1" dur="1.5s" begin="0.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="55" cy="40" r="3" fill="#9c27b0">
+        <animate attributeName="opacity" values="1;0.2;1" dur="1.5s" begin="1s" repeatCount="indefinite"/>
+    </circle>
+</svg> 

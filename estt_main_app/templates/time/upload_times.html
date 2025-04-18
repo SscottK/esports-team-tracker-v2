@@ -1,18 +1,67 @@
-{% extends 'base.html' %}
-
-{% block content %}
+{% extends 'base.html' %} {% load static %} {% block head %}
+<title>ESTT - Upload Times</title>
 <style>
-    .form-select, .form-control {
+    .form-control, .form-select, select, input, textarea {
         background-color: #212529 !important;
+        border: 1px solid #495057 !important;
         color: white !important;
-        border-color: #444 !important;
+        max-width: 300px !important;
+        width: 100%;
     }
-
-    .form-select option {
+    .form-control:focus, .form-select:focus, select:focus, input:focus, textarea:focus {
+        background-color: #2c3034 !important;
+        color: white !important;
+        border-color: #0d6efd !important;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+    }
+    .form-control::placeholder {
+        color: #adb5bd !important;
+        opacity: 1;
+    }
+    /* Style for dropdown options */
+    select option {
         background-color: #212529;
         color: white;
     }
-
+    /* Style for disabled options */
+    select option:disabled {
+        color: #6c757d;
+    }
+    .card {
+        max-width: 500px;
+        margin: 0 auto;
+        border: 1px solid #6f2da8;
+    }
+    .btn-primary {
+        background-color: #9c27b0;
+        border: none;
+    }
+    .btn-primary:hover {
+        background-color: #7b1fa2;
+    }
+    .btn-secondary {
+        background-color: #6c757d;
+        border: none;
+    }
+    .btn-secondary:hover {
+        background-color: #5a6268;
+    }
+    /* Style for form labels */
+    .form-group label {
+        color: white;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    /* Style for help text */
+    .form-group .helptext {
+        color: #adb5bd;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        display: block;
+    }
+    .form-group {
+        margin-bottom: 1rem;
+    }
     /* Style for file input button */
     .form-control[type="file"]::-webkit-file-upload-button {
         background-color: #444;
@@ -21,7 +70,6 @@
         padding: 5px 10px;
         margin-right: 10px;
     }
-
     .form-control[type="file"]::file-selector-button {
         background-color: #444;
         color: white;
@@ -29,42 +77,75 @@
         padding: 5px 10px;
         margin-right: 10px;
     }
+    .alert {
+        border: none;
+        border-radius: 4px;
+    }
+    .alert-info {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+    .alert-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    .alert-warning {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    .instructions {
+        margin-top: 2rem;
+        padding: 1rem;
+        background-color: #2c3034;
+        border-radius: 4px;
+    }
+    .instructions h4 {
+        color: white;
+        margin-bottom: 1rem;
+    }
+    .instructions ul {
+        color: #adb5bd;
+        padding-left: 1rem;
+    }
+    .instructions li {
+        margin-bottom: 0.5rem;
+    }
 </style>
-
-<div class="container mt-4">
-    <div class="card card-dark">
+{% endblock %} {% block content %}
+<div class="container">
+    <div class="card bg-dark text-white">
         <div class="card-header card-header-gradient">
             <h2 class="mb-0">Upload Times for {{ team.name }}</h2>
         </div>
         <div class="card-body">
             {% if messages %}
-            <div class="messages">
-                {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">
-                    {{ message }}
+                <div class="messages">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
-            </div>
             {% endif %}
             
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
-                <div class="mb-3">
-                    <label for="game" class="form-label">Select Game</label>
+                <div class="form-group">
+                    <label for="game">Select Game</label>
                     <select class="form-select" id="game" name="game" required>
                         <option value="">Choose a game...</option>
                         {% for team_game in team_games %}
-                        <option value="{{ team_game.game.id }}">{{ team_game.game.game }}</option>
+                            <option value="{{ team_game.game.id }}">{{ team_game.game.game }}</option>
                         {% endfor %}
                     </select>
                 </div>
-                <div class="mb-3">
-                    <label for="csv_file" class="form-label">Select CSV File</label>
+                <div class="form-group">
+                    <label for="csv_file">Select CSV File</label>
                     <input type="file" class="form-control" id="csv_file" name="csv_file" accept=".csv" required>
                 </div>
-                <div class="d-flex gap-3">
-                    <button type="submit" class="btn btn-primary">Upload Times</button>
+                <div class="d-flex justify-content-between">
                     <a href="{% url 'team-details' teamID=team.id %}" class="btn btn-secondary">Nevermind</a>
+                    <button type="submit" class="btn btn-primary">Upload Times</button>
                 </div>
             </form>
 
@@ -111,7 +192,7 @@
                 </div>
             {% endif %}
             
-            <div class="mt-4">
+            <div class="instructions">
                 <h4>Instructions:</h4>
                 <ul>
                     <li>Select the game you want to upload times for</li>

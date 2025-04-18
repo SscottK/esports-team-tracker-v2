@@ -11,25 +11,149 @@
 {% endblock %}
 
 {% block content %}
-<div class="container d-flex flex-column align-items-center justify-content-center min-vh-100">
-    <div class="text-center" style="max-width: 800px;">
-        <div class="login-signup-links mb-4">
-            <nav class="d-flex justify-content-center">
-                <a class="btn text-white border-white home-btn" href="{% url 'login' %}">Login</a>
-                <a class="btn text-white border-white home-btn" href="{% url 'signup' %}">Sign Up</a>
-            </nav>
-        </div>
-        
-        <div class="logo-div mb-4">
-            <img class="logo-image img-fluid" src="{% static '/images/esttLogo.png' %}" alt="E-sports Team Tracker Logo">
-        </div>
-        
-        <div class="welcome-blurb">
-            <h2 class="mb-4">Welcome to E-sports Team Tracker</h2>
-            <p class="mb-4">Welcome to the best place to track your E-sports team data. You can track data across multiple teams and their various games that are all a part of your organization. Join today to start tracking and help your team achieve new goals and heights with greater insights.</p>
-            
-            <p>To sign up click <a class="blurb-links mx-1" href="{% url 'signup' %}">here</a> or if you already have an account you can login <a class="blurb-links mx-1" href="{% url 'login' %}">here</a></p>
+<!-- Hero Section -->
+<section class="hero-section py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 text-md-start">
+                <h1 class="display-4 fw-bold mb-4">Track Your Esports Team's Progress</h1>
+                <p class="lead mb-4">Elevate your team's performance with comprehensive time tracking, goal setting, and achievement monitoring.</p>
+                <div class="d-flex gap-3 justify-content-md-start justify-content-center">
+                    <a href="{% url 'signup' %}" class="btn btn-primary btn-lg">Get Started</a>
+                    <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg">Login</a>
+                </div>
+            </div>
+            <div class="col-md-6 d-flex align-items-center justify-content-center">
+                <img src="{% static '/images/esttLogo.png' %}" alt="E-sports Team Tracker Logo" class="hero-logo">
+            </div>
         </div>
     </div>
-</div>
+</section>
+
+<!-- Current Features Section -->
+<section class="features-section py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Current Features</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon time-tracking"></div>
+                    <h3>Time Tracking</h3>
+                    <p>Track and compare member completion times across different games and challenges.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon diamond-times"></div>
+                    <h3>Diamond Times</h3>
+                    <p>Recognize exceptional performance with our diamond ranking system.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon target-times"></div>
+                    <h3>Target Times</h3>
+                    <p>Set and monitor performance goals for your team members.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="how-it-works-section py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">How It Works</h2>
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h4>Create Organization</h4>
+                    <p>Set up your esports organization</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h4>Add Members</h4>
+                    <p>Invite your team members</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h4>Set Targets</h4>
+                    <p>Define performance goals</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <h4>Track Progress</h4>
+                    <p>Monitor and improve</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Coming Soon Section -->
+<section class="coming-soon-section py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Coming Soon</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="future-feature-card">
+                    <div class="feature-icon team-messaging"></div>
+                    <h3>Team Messaging</h3>
+                    <p>Built-in communication system for seamless team coordination.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="future-feature-card">
+                    <div class="feature-icon time-approval"></div>
+                    <h3>Time Approval System</h3>
+                    <p>Coaches can verify and approve submitted times.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="future-feature-card">
+                    <div class="feature-icon team-calendar"></div>
+                    <h3>Team Calendar</h3>
+                    <p>Schedule and manage team events and practices.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="future-feature-card">
+                    <div class="feature-icon practice-goals"></div>
+                    <h3>Practice Goals</h3>
+                    <p>Set and track team practice objectives.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="future-feature-card">
+                    <div class="feature-icon team-stats"></div>
+                    <h3>Team vs Team Stats</h3>
+                    <p>Compare performance metrics between teams.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="future-feature-card">
+                    <div class="feature-icon resource-library"></div>
+                    <h3>Resource Library</h3>
+                    <p>Access training materials and improvement guides.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Section -->
+<section class="cta-section py-5">
+    <div class="container text-center">
+        <h2 class="mb-4">Ready to Level Up Your Team?</h2>
+        <p class="lead mb-4">Join the growing community of esports teams using our platform to track and improve their performance.</p>
+        <a href="{% url 'signup' %}" class="btn btn-primary btn-lg">Create Your Organization</a>
+    </div>
+</section>
 {% endblock %}

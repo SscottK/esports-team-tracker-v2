@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Goal List Background -->
+    <rect x="15" y="15" width="50" height="50" rx="5" fill="#2d1f3d" stroke="#9c27b0" stroke-width="2"/>
+    
+    <!-- Progress Bar 1 -->
+    <rect x="20" y="25" width="40" height="8" rx="4" fill="#6f2da8" opacity="0.3"/>
+    <rect x="20" y="25" width="32" height="8" rx="4" fill="#9c27b0">
+        <animate
+            attributeName="width"
+            values="0;32"
+            dur="1.5s"
+            repeatCount="1"/>
+    </rect>
+    
+    <!-- Progress Bar 2 -->
+    <rect x="20" y="40" width="40" height="8" rx="4" fill="#6f2da8" opacity="0.3"/>
+    <rect x="20" y="40" width="24" height="8" rx="4" fill="#9c27b0">
+        <animate
+            attributeName="width"
+            values="0;24"
+            dur="1.5s"
+            repeatCount="1"/>
+    </rect>
+    
+    <!-- Progress Bar 3 -->
+    <rect x="20" y="55" width="40" height="8" rx="4" fill="#6f2da8" opacity="0.3"/>
+    <rect x="20" y="55" width="36" height="8" rx="4" fill="#9c27b0">
+        <animate
+            attributeName="width"
+            values="0;36"
+            dur="1.5s"
+            repeatCount="1"/>
+    </rect>
+    
+    <!-- Checkmark Indicators -->
+    <circle cx="65" cy="29" r="5" fill="#2d1f3d" stroke="#ba68c8" stroke-width="2"/>
+    <path d="M62 29 L64 31 L68 27" stroke="#ba68c8" stroke-width="2" stroke-linecap="round">
+        <animate
+            attributeName="stroke-dasharray"
+            values="0,20;20,0"
+            dur="0.5s"
+            begin="1s"
+            repeatCount="1"/>
+    </path>
+    
+    <circle cx="65" cy="44" r="5" fill="#2d1f3d" stroke="#ba68c8" stroke-width="2"/>
+    <path d="M62 44 L64 46 L68 42" stroke="#ba68c8" stroke-width="2" stroke-linecap="round">
+        <animate
+            attributeName="stroke-dasharray"
+            values="0,20;20,0"
+            dur="0.5s"
+            begin="1.2s"
+            repeatCount="1"/>
+    </path>
+    
+    <circle cx="65" cy="59" r="5" fill="#2d1f3d" stroke="#ba68c8" stroke-width="2"/>
+    <path d="M62 59 L64 61 L68 57" stroke="#ba68c8" stroke-width="2" stroke-linecap="round">
+        <animate
+            attributeName="stroke-dasharray"
+            values="0,20;20,0"
+            dur="0.5s"
+            begin="1.4s"
+            repeatCount="1"/>
+    </path>
+</svg> 

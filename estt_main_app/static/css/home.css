@@ -63,3 +63,338 @@
     height: auto;
     margin: 0 auto;
 }
+
+/* Add general text color rules */
+body, p, h1, h2, h3, h4, .lead {
+    color: white;
+}
+
+.feature-card p,
+.step-card p,
+.future-feature-card p {
+    color: white;
+}
+
+.feature-card h3,
+.step-card h4,
+.future-feature-card h3 {
+    color: white;
+}
+
+/* Keep purple color for specific elements */
+.welcome-blurb h2,
+.blurb-links {
+    color: #9c27b0;
+}
+
+/* Section Gradients */
+.hero-section {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d1f3d 100%);
+    color: white;
+}
+
+.features-section {
+    background: linear-gradient(135deg, #2d1f3d 0%, #1a1a1a 100%);
+    color: white;
+}
+
+.how-it-works-section {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d1f3d 100%);
+    color: white;
+}
+
+.coming-soon-section {
+    background: linear-gradient(135deg, #2d1f3d 0%, #1a1a1a 100%);
+    color: white;
+}
+
+.cta-section {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d1f3d 100%);
+    color: white;
+}
+
+/* Card Styles */
+.feature-card, .step-card, .future-feature-card {
+    background: rgba(44, 48, 52, 0.7);
+    border: 1px solid #6f2da8;
+    border-radius: 10px;
+    padding: 2rem;
+    height: 100%;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.feature-card:hover, .step-card:hover, .future-feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(156, 39, 176, 0.2);
+    border-color: #9c27b0;
+}
+
+.feature-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* Current Features Icons */
+.feature-icon.time-tracking {
+    background-image: url('/static/images/stopwatch-detailed.svg');
+}
+
+.feature-icon.diamond-times {
+    background-image: url('/static/images/diamond-detailed.svg');
+}
+
+.feature-icon.target-times {
+    background-image: url('/static/images/target-detailed.svg');
+}
+
+/* Coming Soon Icons */
+.feature-icon.team-messaging {
+    background-image: url('/static/images/team-messaging.svg');
+}
+
+.feature-icon.time-approval {
+    background-image: url('/static/images/time-approval.svg');
+}
+
+.feature-icon.team-calendar {
+    background-image: url('/static/images/team-calendar.svg');
+}
+
+.feature-icon.practice-goals {
+    background-image: url('/static/images/practice-goals.svg');
+}
+
+.feature-icon.team-stats {
+    background-image: url('/static/images/team-stats.svg');
+}
+
+.feature-icon.resource-library {
+    background-image: url('/static/images/resource-library.svg');
+}
+
+/* Card Hover Effect */
+.feature-card:hover .feature-icon,
+.future-feature-card:hover .feature-icon {
+    transform: scale(1.1);
+    transition: transform 0.3s ease;
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #9c27b0, #6f2da8);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    color: white;
+    font-weight: bold;
+}
+
+/* Text Colors */
+body, p, h1, h2, h3, h4, .lead {
+    color: white;
+}
+
+.feature-card p,
+.step-card p,
+.future-feature-card p {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.feature-card h3,
+.step-card h4,
+.future-feature-card h3 {
+    text-align: center;
+    margin: 1rem 0;
+}
+
+/* Section Spacing */
+section {
+    padding: 5rem 0;
+}
+
+/* Hero Logo */
+.hero-logo {
+    max-width: 400px;
+    height: auto;
+    filter: drop-shadow(0 0 10px rgba(156, 39, 176, 0.3));
+}
+
+/* Button Styles */
+.btn-primary {
+    background: linear-gradient(135deg, #9c27b0, #6f2da8);
+    border: none;
+    padding: 0.8rem 2rem;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #6f2da8, #9c27b0);
+    transform: translateY(-2px);
+}
+
+.btn-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Section Headers */
+section h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 3rem;
+    position: relative;
+    padding-bottom: 1rem;
+}
+
+section h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: #9c27b0;
+    border-radius: 2px;
+}
+
+/* Specific section spacing */
+.hero-section,
+.features-section,
+.how-it-works-section,
+.coming-soon-section,
+.cta-section {
+    padding: 4rem 0;
+    text-align: center;
+}
+
+/* Ensure container alignment */
+.container {
+    text-align: center;
+}
+
+/* Card text alignment reset */
+.feature-card,
+.step-card,
+.future-feature-card {
+    text-align: center;
+}
+
+/* Force center alignment for all sections and their contents */
+.hero-section,
+.features-section,
+.how-it-works-section,
+.coming-soon-section,
+.cta-section {
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+}
+
+/* Ensure containers are centered */
+.container {
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    width: 100% !important;
+}
+
+/* Strong centering for section headers */
+section h2,
+.hero-section h2,
+.features-section h2,
+.how-it-works-section h2,
+.coming-soon-section h2,
+.cta-section h2 {
+    text-align: center !important;
+    width: 100% !important;
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: white;
+    margin: 0 auto 3rem auto !important;
+    padding-bottom: 1rem;
+    position: relative;
+}
+
+/* Ensure the underline is centered */
+section h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 60px;
+    height: 3px;
+    background: #9c27b0;
+    border-radius: 2px;
+}
+
+/* Center row contents */
+.row {
+    justify-content: center !important;
+    width: 100% !important;
+}
+
+/* Reset any potential Bootstrap overrides */
+.text-md-start {
+    text-align: center !important;
+}
+
+.justify-content-md-start {
+    justify-content: center !important;
+}
+
+/* Override any base template styles */
+body section .container h2,
+.features-section .container h2,
+.how-it-works-section .container h2,
+.coming-soon-section .container h2,
+.cta-section .container h2 {
+    text-align: center !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    display: block !important;
+}
+
+/* Reset Bootstrap grid alignment */
+.row > * {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Ensure container doesn't have conflicting styles */
+section > .container {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+/* Reset any floating or positioning */
+section h2 {
+    float: none !important;
+    position: relative !important;
+    left: auto !important;
+    transform: none !important;
+    display: block !important;
+}
