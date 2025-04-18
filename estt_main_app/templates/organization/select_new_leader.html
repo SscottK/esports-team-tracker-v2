@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h2>Select New Organization Leader</h2>
+        </div>
+        <div class="card-body">
+            <p class="lead">You are the current leader of {{ org.name }}. Before leaving, you must select a new leader from the organization members.</p>
+            
+            <form method="POST" action="{% url 'leave-org' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="new_leader_id">Select New Leader:</label>
+                    <select class="form-control" id="new_leader_id" name="new_leader_id" required>
+                        <option value="">Choose a new leader...</option>
+                        {% for member in potential_leaders %}
+                            <option value="{{ member.user.id }}">{{ member.user.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-primary">Transfer Leadership and Leave</button>
+                    <a href="{% url 'org-details' %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -124,3 +124,19 @@ class GameSuggestionForm(forms.ModelForm):
         widgets = {
             'game_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter game name'})
         }
+
+class CreateOrgForm(forms.ModelForm):
+    class Meta:
+        model = Organization
+        fields = ['name']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'})
+        }
+
+class CreateOrgUserForm(forms.ModelForm):
+    class Meta:
+        model = Org_user
+        fields = []  # No fields needed since role will be set automatically
+
+class JoinOrgForm(forms.Form):
+    join_code = forms.CharField(max_length=8, widget=forms.TextInput(attrs={'class': 'form-control'}))

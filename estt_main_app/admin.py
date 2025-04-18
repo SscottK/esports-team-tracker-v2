@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Team, Team_user, Game, Level, Time, Target_times, Team_game, Organization, Org_user, Org_team, Org_join_code, GameSuggestion, Diamond_times
+from .models import Team, Team_user, Game, Level, Time, Target_times, Team_game, Organization, Org_team, Org_user, Org_join_code, GameSuggestion, Diamond_times, Org_leader
 
 # Register your models here.
 admin.site.register(Team)
@@ -14,6 +14,7 @@ admin.site.register(Org_team)
 admin.site.register(Org_user)
 admin.site.register(Org_join_code)
 admin.site.register(Diamond_times)
+admin.site.register(Org_leader)
 
 @admin.register(GameSuggestion)
 class GameSuggestionAdmin(admin.ModelAdmin):

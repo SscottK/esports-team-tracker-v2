@@ -1,12 +1,21 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout
-from django.contrib.auth.decorators import login_required
-from .forms import CustomUserCreationForm, GameSuggestionForm
-from django.urls import reverse_lazy
-from .models import Team_user, Team, Team_game, Game, Level, Time, Organization, Org_user, Org_join_code, Org_team, GameSuggestion, Target_times, Diamond_times
+from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
+from django.contrib import messages
+from django.http import JsonResponse
+from django.db.models import Q
+from django.utils import timezone
+from django.core.exceptions import PermissionDenied
+from django.contrib.admin.views.decorators import staff_member_required
+from .models import Team_user, Team, Team_game, Game, Level, Time, Organization, Org_user, Org_join_code, Org_team, GameSuggestion, Target_times, Diamond_times, Org_leader
 from django.views.generic.edit import CreateView, UpdateView
-from .forms import TeamUserForm, EditProfileForm, NewTeamForm, AddTeamUserOnTeamCreationForm, TeamGameForm, TimeCreationForm, TimeUpdateForm, TargetTimesCreationForm, NewOrganizationForm, AddOrgUserOnOrgCreationForm, CreateOrgJoinCode
+from .forms import (
+    CustomUserCreationForm, TeamUserForm, EditProfileForm, NewTeamForm,
+    AddTeamUserOnTeamCreationForm, TeamGameForm, TimeCreationForm, TimeUpdateForm,
+    TargetTimesCreationForm, NewOrganizationForm, AddOrgUserOnOrgCreationForm,
+    CreateOrgJoinCode, GameSuggestionForm, CreateOrgForm, CreateOrgUserForm, JoinOrgForm
+)
 from django.http import HttpResponse
 from django.http import JsonResponse
 import random
@@ -70,11 +79,23 @@ def team_detail(request, teamID):
     members = Team_user.objects.filter(team=teamID)
     games = Team_game.objects.filter(team=teamID)
     user_org = Org_user.objects.filter(user=request.user).first()
+    
+    # Check if user is a member of the team
+    team_user = Team_user.objects.filter(team=teamID, user=request.user).first()
+    if not team_user:
+        messages.error(request, 'You are not a member of this team.')
+        return redirect('dashboard')
+    
     if user_org:
-        org = Organization.objects.filter(name=user_org.org).first()
+        # Check if the team belongs to the user's organization
+        team_in_org = Org_team.objects.filter(team=team, org=user_org.org).exists()
+        if not team_in_org:
+            messages.error(request, 'You can only view teams in your organization.')
+            return redirect('dashboard')
     else:
-        org = ""
-    team_user = get_object_or_404(Team_user, team=teamID, user=request.user)
+        messages.error(request, 'You must be part of an organization to view team details.')
+        return redirect('dashboard')
+
     teams = Team.objects.all()
     active_members = []
     for member in members:
@@ -87,7 +108,7 @@ def team_detail(request, teamID):
         'team': team,
         'team_user': team_user,
         'teams': teams,
-        'org': org
+        'org': user_org.org if user_org else None
     })
 
 # Add member to team
@@ -287,6 +308,17 @@ def create_team(request):
             return redirect('dashboard')
 
         if request.method == 'POST':
+            # Check if user is an organization leader
+            is_org_leader = Org_leader.objects.filter(user=request.user, org=org_user.org).exists()
+            if not is_org_leader:
+                form_one = NewTeamForm()
+                form_two = AddTeamUserOnTeamCreationForm()
+                return render(request, 'team/new_team.html', {
+                    'form_one': form_one,
+                    'form_two': form_two,
+                    'error_message': 'Only organization leaders can create teams.'
+                })
+
             form_one = NewTeamForm(request.POST)
             form_two = AddTeamUserOnTeamCreationForm(request.POST)
             
@@ -669,12 +701,12 @@ def create_target_times(request, team_id, game_id):
             if 'csv_upload' in request.POST:
                 if 'csv_file' not in request.FILES:
                     messages.error(request, 'No CSV file uploaded.')
-                    return redirect('new-target-times', team_id=team_id, game_id=game_id)
+                    return redirect('create-target-times', team_id=team_id, game_id=game_id)
                 
                 csv_file = request.FILES['csv_file']
                 if not csv_file.name.endswith('.csv'):
                     messages.error(request, 'Please upload a CSV file.')
-                    return redirect('new-target-times', team_id=team_id, game_id=game_id)
+                    return redirect('create-target-times', team_id=team_id, game_id=game_id)
                 
                 upload_errors = []
                 empty_lines = []
@@ -889,6 +921,16 @@ def get_levels(request):
 def create_org(request):
     try:
         if request.method == 'POST':
+            # Check if user is already in an organization
+            existing_org_user = Org_user.objects.filter(user=request.user).first()
+            if existing_org_user:
+                org_name = existing_org_user.org.name
+                return render(request, 'organization/new_org.html', {
+                    'form_one': NewOrganizationForm(),
+                    'form_two': AddOrgUserOnOrgCreationForm(),
+                    'error_message': f'You are currently a member of {org_name}. You must leave your current organization before creating or joining another one.'
+                })
+
             try:
                 # Validate form data
                 form_one = NewOrganizationForm(request.POST)
@@ -934,6 +976,21 @@ def create_org(request):
                         'error_message': f'Error creating organization user: {str(e)}'
                     })
                 
+                # Create organization leader
+                try:
+                    Org_leader.objects.create(
+                        user=request.user,
+                        org=new_org
+                    )
+                except Exception as e:
+                    # Rollback organization and user creation if leader creation fails
+                    new_org.delete()
+                    return render(request, 'organization/new_org.html', {
+                        'form_one': form_one,
+                        'form_two': form_two,
+                        'error_message': f'Error creating organization leader: {str(e)}'
+                    })
+                
                 messages.success(request, 'Organization created successfully.')
                 return redirect('dashboard')
                 
@@ -950,6 +1007,7 @@ def create_org(request):
         return render(request, 'organization/new_org.html', {
             'form_one': form_one,
             'form_two': form_two,
+            'warning_message': 'Note: You can only be a member of one organization at a time. If you are currently in an organization, you must leave it before creating or joining another one.'
         })
         
     except Exception as e:
@@ -1646,12 +1704,14 @@ def view_target_times(request, team_id, game_id):
         ).select_related('level')
         print(f"Found {target_times.count()} target times")
         
-        # Get diamond times for this team and game
-        diamond_times = Diamond_times.objects.filter(
-            team=team,
-            level__game=game
-        ).select_related('level')
-        print(f"Found {diamond_times.count()} diamond times")
+        # Only get diamond times if user is a coach
+        diamond_times = []
+        if team_user.isCoach:
+            diamond_times = Diamond_times.objects.filter(
+                team=team,
+                level__game=game
+            ).select_related('level')
+            print(f"Found {len(diamond_times)} diamond times")
         
         # Create a list of all levels with their target times and diamond times
         level_times = []
@@ -1659,14 +1719,16 @@ def view_target_times(request, team_id, game_id):
             # Get target time for this level
             target_time = target_times.filter(level=level).first()
             
-            # Get diamond time for this level
-            diamond_time = diamond_times.filter(level=level).first()
+            # Get diamond time for this level (only for coaches)
+            diamond_time = None
+            if team_user.isCoach:
+                diamond_time = next((dt for dt in diamond_times if dt.level_id == level.id), None)
             
             level_times.append({
                 'level': level,
                 'high_target': target_time.high_target if target_time else '-',
                 'low_target': target_time.low_target if target_time else '-',
-                'diamond_target': diamond_time.diamond_target if diamond_time else '-'
+                'diamond_target': diamond_time.diamond_target if diamond_time else '-' if team_user.isCoach else None
             })
         
         print(f"Created {len(level_times)} level times entries")
@@ -1675,6 +1737,7 @@ def view_target_times(request, team_id, game_id):
             'team': team,
             'game': game,
             'target_times': level_times,
+            'is_coach': team_user.isCoach
         }
         
         return render(request, 'target_time/view_tt.html', context)
@@ -1701,22 +1764,23 @@ def get_target_times(request, team_id, game_id):
         # Verify team membership
         team = get_object_or_404(Team, id=team_id)
         try:
-            Team_user.objects.get(team=team, user=request.user)
+            team_user = Team_user.objects.get(team=team, user=request.user)
         except Team_user.DoesNotExist:
             return JsonResponse({'error': 'Not a team member'}, status=403)
             
-        # Get target times and diamond times for this team and game with level information
-        target_times = Target_times.objects.filter(
-            team=team,
-            level__game_id=game_id
-        ).select_related('level').values(
-            'level_id',
-            'level__level_name',
-            'high_target',
-            'low_target'
-        )
+        # Get all levels for this game
+        levels = Level.objects.filter(game_id=game_id).values('id', 'level_name')
         
-        # Get diamond times
+        # Get target times as a dictionary for easy lookup
+        target_times = {
+            tt['level_id']: tt 
+            for tt in Target_times.objects.filter(
+                team=team,
+                level__game_id=game_id
+            ).values('level_id', 'high_target', 'low_target')
+        }
+        
+        # Get diamond times for all team members
         diamond_times = {
             dt['level_id']: dt['diamond_target'] 
             for dt in Diamond_times.objects.filter(
@@ -1725,15 +1789,17 @@ def get_target_times(request, team_id, game_id):
             ).values('level_id', 'diamond_target')
         }
         
-        # Convert to list and format the data
+        # Convert to list and format the data for all levels
         formatted_times = []
-        for tt in target_times:
+        for level in levels:
+            level_id = level['id']
+            target_time = target_times.get(level_id, {})
             formatted_times.append({
-                'level': tt['level_id'],
-                'level_name': tt['level__level_name'],
-                'high_target': tt['high_target'],
-                'low_target': tt['low_target'],
-                'diamond_target': diamond_times.get(tt['level_id'], None)
+                'level': level_id,
+                'level_name': level['level_name'],
+                'high_target': target_time.get('high_target', '-'),
+                'low_target': target_time.get('low_target', '-'),
+                'diamond_target': diamond_times.get(level_id, '-')  # Show diamond times to all team members
             })
         
         return JsonResponse(formatted_times, safe=False)
@@ -1991,3 +2057,184 @@ def delete_diamond_times(request, team_id, game_id, level_id):
         messages.error(request, f'Error deleting diamond time: {str(e)}')
         
     return redirect('view-target-times', team_id=team_id, game_id=game_id)
+
+@login_required
+def org_details(request):
+    try:
+        # Get user's organization membership
+        org_user = Org_user.objects.filter(user=request.user).first()
+        org = None
+        org_leader = None
+        teams = None
+        user_teams = set()
+        
+        if org_user:
+            org = org_user.org
+            org_leader = Org_leader.objects.filter(org=org).first()
+            # Get all teams in the organization
+            teams = Team.objects.filter(org_team__org=org)
+            # Get the teams the user is a member of
+            user_teams = set(Team.objects.filter(
+                org_team__org=org,
+                team_user__user=request.user
+            ).values_list('id', flat=True))
+        
+        return render(request, 'organization/org_details.html', {
+            'org': org,
+            'org_user': org_user,
+            'org_leader': org_leader,
+            'teams': teams,
+            'user_teams': user_teams
+        })
+    except Exception as e:
+        messages.error(request, f'An unexpected error occurred: {str(e)}')
+        return redirect('dashboard')
+
+@login_required
+def leave_org(request):
+    try:
+        if request.method != 'POST':
+            return redirect('org-details')
+            
+        # Get user's organization membership
+        org_user = Org_user.objects.filter(user=request.user).first()
+        if not org_user:
+            messages.error(request, 'You are not a member of any organization.')
+            return redirect('org-details')
+            
+        # Check if user is the organization leader
+        is_leader = Org_leader.objects.filter(user=request.user, org=org_user.org).exists()
+        
+        if is_leader:
+            # Get all organization members
+            org_members = Org_user.objects.filter(org=org_user.org).exclude(user=request.user)
+            
+            if org_members.exists():
+                # If there are other members, require a replacement leader
+                if 'new_leader_id' not in request.POST:
+                    # Get all potential new leaders (other members)
+                    potential_leaders = org_members.select_related('user')
+                    return render(request, 'organization/select_new_leader.html', {
+                        'org': org_user.org,
+                        'potential_leaders': potential_leaders
+                    })
+                
+                # Get the selected new leader
+                new_leader_id = request.POST.get('new_leader_id')
+                try:
+                    new_leader = User.objects.get(id=new_leader_id)
+                    new_leader_org_user = Org_user.objects.get(user=new_leader, org=org_user.org)
+                    
+                    # Remove current leader
+                    Org_leader.objects.filter(user=request.user, org=org_user.org).delete()
+                    
+                    # Set new leader
+                    Org_leader.objects.create(user=new_leader, org=org_user.org)
+                    
+                    messages.success(request, f'Successfully transferred leadership to {new_leader.username}.')
+                except (User.DoesNotExist, Org_user.DoesNotExist):
+                    messages.error(request, 'Invalid new leader selected.')
+                    return redirect('org-details')
+            else:
+                # If no other members, delete the organization and all related records
+                org = org_user.org
+                org_name = org.name
+                
+                # Delete all related records
+                Team_user.objects.filter(team__org_team__org=org).delete()
+                Team.objects.filter(org_team__org=org).delete()
+                Org_team.objects.filter(org=org).delete()
+                Org_join_code.objects.filter(org=org).delete()
+                Org_leader.objects.filter(org=org).delete()
+                Org_user.objects.filter(org=org).delete()
+                org.delete()
+                
+                messages.success(request, f'Organization {org_name} has been deleted as you were the only member.')
+                return redirect('dashboard')
+        
+        # Get all teams the user is in for this organization
+        user_teams = Team.objects.filter(
+            org_team__org=org_user.org,
+            team_user__user=request.user
+        )
+        
+        # Remove user from all teams in the organization
+        for team in user_teams:
+            Team_user.objects.filter(team=team, user=request.user).delete()
+        
+        # Remove organization membership
+        org_name = org_user.org.name
+        org_user.delete()
+        
+        messages.success(request, f'You have successfully left {org_name}.')
+        return redirect('org-details')
+        
+    except Exception as e:
+        messages.error(request, f'An unexpected error occurred: {str(e)}')
+        return redirect('org-details')
+
+#join or create org page
+@login_required
+def join_create_org(request):
+    if request.method == 'POST':
+        if 'create' in request.POST:
+            org_form = CreateOrgForm(request.POST)
+            org_user_form = CreateOrgUserForm(request.POST)
+            
+            if org_form.is_valid() and org_user_form.is_valid():
+                # Create the organization
+                organization = org_form.save()
+                
+                # Create Org_user instance
+                Org_user.objects.create(
+                    user=request.user,
+                    org=organization
+                )
+                
+                # Create Org_leader instance
+                Org_leader.objects.create(
+                    user=request.user,
+                    org=organization
+                )
+                
+                messages.success(request, 'Organization created successfully!')
+                return redirect('dashboard')
+            else:
+                messages.error(request, 'Please correct the errors below.')
+        
+        elif 'join' in request.POST:
+            join_form = JoinOrgForm(request.POST)
+            if join_form.is_valid():
+                join_code = join_form.cleaned_data['join_code']
+                try:
+                    org_join_code = Org_join_code.objects.get(code=join_code)
+                    organization = org_join_code.org
+                    
+                    # Check if user is already in the organization
+                    if Org_user.objects.filter(user=request.user, org=organization).exists():
+                        messages.error(request, 'You are already a member of this organization.')
+                        return redirect('join-create-org')
+                    
+                    # Create Org_user instance
+                    Org_user.objects.create(
+                        user=request.user,
+                        org=organization
+                    )
+                    
+                    messages.success(request, 'Successfully joined the organization!')
+                    return redirect('dashboard')
+                except Org_join_code.DoesNotExist:
+                    messages.error(request, 'Invalid join code.')
+            else:
+                messages.error(request, 'Please correct the errors below.')
+    
+    # GET request - display empty forms
+    org_form = CreateOrgForm()
+    org_user_form = CreateOrgUserForm()
+    join_form = JoinOrgForm()
+    
+    return render(request, 'organization/join_create_org.html', {
+        'org_form': org_form,
+        'org_user_form': org_user_form,
+        'join_form': join_form
+    })

@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 # Create your models here.
 
@@ -149,10 +150,8 @@ class Org_user(models.Model):
     #the org the user is in
     org = models.ForeignKey(Organization, on_delete=models.CASCADE)
 
-    #what it will return when being printed
     def __str__(self):
-        rtrn_strng = self.user.username + ", " + self.org.name
-        return rtrn_strng
+        return f"{self.user.username} - {self.org.name}"
 
 
 #org join code
@@ -189,3 +188,16 @@ class Diamond_times(models.Model):
 
     class Meta:
         unique_together = ('level', 'team')  # Only one diamond time per level per team
+
+class Org_leader(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    org = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'org')
+        verbose_name = 'Organization Leader'
+        verbose_name_plural = 'Organization Leaders'
+
+    def __str__(self):
+        return f"{self.user.username} - {self.org.name} Leader"

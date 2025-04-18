@@ -347,7 +347,7 @@
 
 <title>ESTT - Team Details</title>
 {% endblock %} {% block content %}
-<div class="container-fluid" x-data="teamDetails()" x-init="loadGames({{ team.id }})">
+<div class="container-fluid" x-data="teamDetails()" x-init="loadGames({{ team.id }})" data-is-coach="{{ team_user.isCoach|yesno:'true,false' }}">
   <!-- Side Menu -->
   <div class="side-menu">
     <div class="list-group">
@@ -381,12 +381,6 @@
     <div class="text-center">
       <h1>Team Details</h1>
       <h3>Name: <span class="font-weight-bold">{{ team.name }}</span></h3>
-
-      {% if team_user.isCoach %} {% if org %}
-      <a class="btn btn-primary" href="{% url 'join-codes' org_id=org.id %}"
-        >Join Codes</a
-      >
-      {% endif %} {% endif %}
     </div>
 
     <!-- Content Sections -->
@@ -412,22 +406,6 @@
                     class="btn btn-link"
                     x-text="game.game__game"
                   ></button>
-                  {% if user_is_coach %}
-                  <div class="btn-group">
-                    <a 
-                      href="{% url 'new-target-times' team_id=team.id game_id=game.game_id %}" 
-                      class="btn times-action-btn"
-                    >
-                      Add Target Times
-                    </a>
-                    <a 
-                      href="{% url 'view-target-times' team_id=team.id game_id=game.game_id %}" 
-                      class="btn times-action-btn"
-                    >
-                      View Target Times
-                    </a>
-                  </div>
-                  {% endif %}
                 </li>
               </template>
             </ul>
@@ -448,15 +426,15 @@
                       <div class="d-flex align-items-center">
                         <div class="d-flex align-items-center">
                           <div class="color-box bg-success"></div>
-                          <span class="ms-1">Fast</span>
+                          <span class="ms-1">Faster than High Target</span>
                         </div>
                         <div class="d-flex align-items-center ms-3">
                           <div class="color-box bg-warning"></div>
-                          <span class="ms-1">On Target</span>
+                          <span class="ms-1">Between High and Low Target</span>
                         </div>
                         <div class="d-flex align-items-center ms-3">
                           <div class="color-box bg-danger"></div>
-                          <span class="ms-1">Needs Work</span>
+                          <span class="ms-1">Slower than Low Target</span>
                         </div>
                         <a 
                           :href="`/time/${tableData.team_id}/game/${tableData.game_id}/compare/`"
@@ -498,11 +476,6 @@
                   <div style="margin-left: 10px; padding: 0;">
                     <!-- Target Times Controls -->
                     <div class="d-flex align-items-center mb-2" x-show="tableData && tableData.game_id">
-                      <a 
-                        :href="`/team/${tableData.team_id}/game/${tableData.game_id}/target-times/new/`" 
-                        class="btn btn-warning"
-                        style="white-space: nowrap;"
-                      >Add Target Times</a>
                       <a 
                         :href="`/team/${tableData.team_id}/game/${tableData.game_id}/target-times/`" 
                         class="btn btn-info ms-2"
@@ -876,7 +849,7 @@
             result = rank || "";
         }
 
-        // Check if time is within 10 seconds of diamond time
+        // Check if time is within 10 seconds of diamond time (for all users)
         const target = this.targetTimes.find(t => t.level === levelId);
         if (target && target.diamond_target && userTimeSeconds) {
           const diamondTimeSeconds = this.timeToSeconds(target.diamond_target);

@@ -43,4 +43,7 @@ urlpatterns = [
     path('manage-game-suggestions/', views.manage_game_suggestions, name='manage-game-suggestions'),
     path('time/<int:team_id>/game/<int:game_id>/compare/', views.compare_times, name='compare_times'),
     path('api/compare-data/', views.get_compare_data, name='get_compare_data'),
+    path('org-details/', views.org_details, name='org-details'),
+    path('leave-org/', views.leave_org, name='leave-org'),
+    path('organization/join-create/', views.join_create_org, name='join-create-org'),
 ]

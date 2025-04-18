@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+<title>ESTT - Organization Details</title>
+<style>
+    .card {
+        max-width: 600px;
+        margin: 0 auto;
+        border: 1px solid #6f2da8;
+    }
+    .btn-primary {
+        background-color: #9c27b0;
+        border: none;
+    }
+    .btn-primary:hover {
+        background-color: #7b1fa2;
+    }
+    .btn-danger {
+        background-color: #dc3545;
+        border: none;
+    }
+    .btn-danger:hover {
+        background-color: #c82333;
+    }
+    .danger-section {
+        border: 1px solid #dc3545;
+        border-radius: 5px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+    .org-info {
+        margin-bottom: 20px;
+    }
+    .org-info h3 {
+        color: #9c27b0;
+        margin-bottom: 10px;
+    }
+    .org-info p {
+        margin-bottom: 5px;
+    }
+    .teams-section {
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+    .teams-list {
+        list-style: none;
+        padding: 0;
+    }
+    .team-item {
+        padding: 10px;
+        margin: 5px 0;
+        background-color: #2d2d2d;
+        border-radius: 5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .team-item a {
+        color: #fff;
+        text-decoration: none;
+    }
+    .team-item a:hover {
+        color: #9c27b0;
+    }
+    .team-name {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .member-icon {
+        color: #9c27b0;
+        font-size: 1.2em;
+    }
+</style>
+<!-- Add Font Awesome for the user icon -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card bg-dark text-white">
+        <div class="card-header card-header-gradient">
+            <h2 class="mb-0">Organization Details</h2>
+        </div>
+        <div class="card-body">
+            {% if org %}
+                <div class="org-info">
+                    <h3>{{ org.name }}</h3>
+                    <p class="text-gray-600">Leader: {{ org_leader.user.username }}</p>
+                    <p class="text-gray-600">Organization Created: {{ org_leader.created_at|date:"F j, Y" }}</p>
+                    {% if org_leader.user == request.user %}
+                    <div class="mt-3">
+                        <a href="{% url 'join-codes' org_id=org.id %}" class="btn btn-primary">Join Codes</a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="teams-section">
+                    <h4>Teams</h4>
+                    {% if teams %}
+                        <ul class="teams-list">
+                            {% for team in teams %}
+                                <li class="team-item">
+                                    <div class="team-name">
+                                        <a href="{% url 'team-details' teamID=team.id %}">{{ team.name }}</a>
+                                        {% if team.id in user_teams %}
+                                            <i class="fas fa-user member-icon" title="You are a member of this team"></i>
+                                        {% endif %}
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No teams in this organization yet.</p>
+                    {% endif %}
+                </div>
+                
+                <div class="danger-section">
+                    <h4 class="text-danger">Danger Zone</h4>
+                    <p>Leaving the organization will remove you from all teams and revoke all permissions.</p>
+                    <form method="post" action="{% url 'leave-org' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to leave this organization? This action cannot be undone.')">
+                            Leave Organization
+                        </button>
+                    </form>
+                </div>
+            {% else %}
+                <div class="text-center">
+                    <h3>No Organization</h3>
+                    <p>You are not currently a member of any organization.</p>
+                    <a href="{% url 'join-create-org' %}" class="btn btn-primary">Join or Create Organization</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 
