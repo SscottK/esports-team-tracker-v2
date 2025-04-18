@@ -370,7 +370,7 @@
         :class="{ active: activeSection === 'members' }"
         @click="activeSection = 'members'"
       >
-        Members
+        Roster
       </button>
     </div>
   </div>
@@ -587,10 +587,12 @@
       <div x-show="activeSection === 'members'" class="mt-4">
         <div class="card card-dark">
           <div class="card-header card-header-gradient d-flex justify-content-between align-items-center">
-            <h2 class="mb-0">Members</h2>
+            <h2 class="mb-0">Roster</h2>
+            {% if team_user.isCoach %}
             <div class="header-btns-container">
               <a href="{% url 'add_team_member' teamID=team.id org_id=org.id %}" class="header-btn">Add Member</a>
             </div>
+            {% endif %}
           </div>
           <div class="card-body">
             <ul class="list-group">
@@ -794,7 +796,7 @@
           
           this.tableData = data;
           await this.loadTargetTimes(this.tableData.team_id, gameId);
-          this.tableData.game = `Member Times for ${this.tableData.game}`;
+          this.tableData.game = `Roster Times for ${this.tableData.game}`;
           this.errorMessage = "";
         } catch (error) {
           console.error("Error loading table:", error);
