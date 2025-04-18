@@ -1,0 +1,1 @@
+web: gunicorn esports_team_tracker.wsgi --log-file - 
