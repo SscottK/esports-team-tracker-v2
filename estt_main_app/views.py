@@ -1060,26 +1060,16 @@ def join_codes(request, org_id):
             messages.error(request, 'You are not a member of any team in this organization.')
             return redirect('dashboard')
         
-        # Get join code with error handling
-        try:
-            code = Org_join_code.objects.filter(org=org).first()
-            print(f"Join code query result: {code}")
-            if not code:
-                print("No join code exists")
-                messages.error(request, 'No join code exists for this organization.')
-                return redirect('dashboard')
-                
-            print("Rendering template with code, org, and team")
-            return render(request, 'organization/org_code_generator.html', {
-                'code': code,
-                'org': org,
-                'team': team
-            })
+        # Get join code if it exists
+        code = Org_join_code.objects.filter(org=org).first()
+        print(f"Join code query result: {code}")
             
-        except Exception as e:
-            print(f"Error retrieving join code: {str(e)}")
-            messages.error(request, f'Error retrieving join code: {str(e)}')
-            return redirect('dashboard')
+        # Always render the template, whether code exists or not
+        return render(request, 'organization/org_code_generator.html', {
+            'code': code,
+            'org': org,
+            'team': team
+        })
             
     except Exception as e:
         print(f"Unexpected error: {str(e)}")

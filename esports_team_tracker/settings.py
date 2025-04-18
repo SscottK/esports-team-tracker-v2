@@ -83,12 +83,22 @@ WSGI_APPLICATION = 'esports_team_tracker.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL', 'postgres://localhost/esttdb'),
-        conn_max_age=600
-    )
-}
+if os.environ.get('DATABASE_URL'):
+    # Production database (Heroku)
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.environ.get('DATABASE_URL'),
+            conn_max_age=600
+        )
+    }
+else:
+    # Local database
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'esttdb',
+        }
+    }
 
 
 # Password validation
