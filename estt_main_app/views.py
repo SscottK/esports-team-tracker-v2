@@ -280,6 +280,12 @@ def edit_profile(request, user_id):
 @login_required
 def create_team(request):
     try:
+        # Get user's organization first
+        org_user = Org_user.objects.filter(user=request.user).first()
+        if not org_user:
+            messages.error(request, 'You must be a member of an organization to create a team.')
+            return redirect('dashboard')
+
         if request.method == 'POST':
             form_one = NewTeamForm(request.POST)
             form_two = AddTeamUserOnTeamCreationForm(request.POST)
@@ -294,14 +300,36 @@ def create_team(request):
                 })
                 
             if form_one.is_valid() and form_two.is_valid():
-                new_team = form_one.save(commit=False)
-                new_team.save()            
-                team_user = form_two.save(commit=False)
-                team_user.team = new_team
-                team_user.user = request.user
-                team_user.isCoach = True
-                team_user.save()
-                return redirect('dashboard')
+                try:
+                    # Create the team
+                    new_team = form_one.save(commit=False)
+                    new_team.save()
+                    
+                    # Create the team user (coach)
+                    team_user = form_two.save(commit=False)
+                    team_user.team = new_team
+                    team_user.user = request.user
+                    team_user.isCoach = True
+                    team_user.save()
+                    
+                    # Create the org_team record
+                    Org_team.objects.create(
+                        team=new_team,
+                        org=org_user.org
+                    )
+                    
+                    messages.success(request, 'Team created successfully!')
+                    return redirect('dashboard')
+                except Exception as e:
+                    # If anything fails, delete the team to maintain consistency
+                    if new_team.id:
+                        new_team.delete()
+                    messages.error(request, f'Error creating team: {str(e)}')
+                    return render(request, 'team/new_team.html', {
+                        'form_one': form_one,
+                        'form_two': form_two,
+                        'error_message': 'Error creating team. Please try again.'
+                    })
             else:
                 return render(request, 'team/new_team.html', {
                     'form_one': form_one,
@@ -317,7 +345,8 @@ def create_team(request):
             'form_two': form_two,
         })
     except Exception as e:
-        return JsonResponse({"error": "An unexpected error occurred while creating the team. Please try again."}, status=500)
+        messages.error(request, f'An unexpected error occurred: {str(e)}')
+        return redirect('dashboard')
 
 # Get games by team
 @login_required
