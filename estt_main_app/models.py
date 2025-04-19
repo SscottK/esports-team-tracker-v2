@@ -117,8 +117,9 @@ class Organization(models.Model):
 
     #Org Name
     name = models.CharField(max_length=50)
-
     
+    #Creation date
+    created_at = models.DateTimeField(default=timezone.now)
 
     #what it will return when being printed
     def __str__(self):
