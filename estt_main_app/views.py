@@ -2067,6 +2067,7 @@ def org_details(request):
         org_leader = None
         teams = None
         user_teams = set()
+        is_coach = False
         
         if org_user:
             org = org_user.org
@@ -2078,13 +2079,20 @@ def org_details(request):
                 org_team__org=org,
                 team_user__user=request.user
             ).values_list('id', flat=True))
+            # Check if user is a coach in any team
+            is_coach = Team_user.objects.filter(
+                team__org_team__org=org,
+                user=request.user,
+                isCoach=True
+            ).exists()
         
         return render(request, 'organization/org_details.html', {
             'org': org,
             'org_user': org_user,
             'org_leader': org_leader,
             'teams': teams,
-            'user_teams': user_teams
+            'user_teams': user_teams,
+            'is_coach': is_coach
         })
     except Exception as e:
         messages.error(request, f'An unexpected error occurred: {str(e)}')
