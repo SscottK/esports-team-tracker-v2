@@ -700,12 +700,28 @@
 
       // Convert time string to seconds for comparison
       timeToSeconds(timeStr) {
-        if (!timeStr) return null;
-        const [mins, rest] = timeStr.split(':');
-        // Handle both .mmm and :mm formats
-        const [secs, ms] = rest.includes('.') ? rest.split('.') : rest.split(':');
-        const msValue = rest.includes('.') ? parseInt(ms) / 1000 : parseInt(ms) / 100;
-        return parseInt(mins) * 60 + parseInt(secs) + msValue;
+        if (!timeStr || timeStr === '-' || typeof timeStr !== 'string') return null;
+        try {
+          const [mins, rest] = timeStr.split(':');
+          if (!mins || !rest) return null;
+          
+          // Handle both .mmm and :mm formats
+          let secs, ms;
+          if (rest.includes('.')) {
+            [secs, ms] = rest.split('.');
+            ms = parseInt(ms) / 1000;
+          } else if (rest.includes(':')) {
+            [secs, ms] = rest.split(':');
+            ms = parseInt(ms) / 100;
+          } else {
+            return null;
+          }
+          
+          return parseInt(mins) * 60 + parseInt(secs) + ms;
+        } catch (e) {
+          console.error('Error parsing time:', e);
+          return null;
+        }
       },
 
       // Get color class based on time comparison
@@ -809,29 +825,40 @@
       },
 
       getTimeRank(levelId, userId) {
-        if (!this.tableData || !this.tableData.times) return "";
+        if (!this.tableData || !this.tableData.times || !this.tableData.users) {
+          return '<span class="rank-display"></span>';
+        }
         
         // Get all times for this level
         const levelTimes = this.tableData.users.map(user => {
           const timeKey = `${levelId}-${user.id}`;
           const time = this.tableData.times[timeKey];
+          const seconds = this.timeToSeconds(time);
           return {
             userId: user.id,
             time: time,
-            seconds: this.timeToSeconds(time)
+            seconds: seconds
           };
         }).filter(entry => entry.seconds !== null);
+
+        // If no valid times, return empty span
+        if (levelTimes.length === 0) {
+          return '<span class="rank-display"></span>';
+        }
 
         // Sort by time (fastest first)
         levelTimes.sort((a, b) => a.seconds - b.seconds);
 
         // Find the rank for the current user
-        const rank = levelTimes.findIndex(entry => entry.userId === userId) + 1;
+        const userEntry = levelTimes.find(entry => entry.userId === userId);
+        if (!userEntry || userEntry.seconds === null) {
+          return '<span class="rank-display"></span>';
+        }
         
-        // Get the user's time in seconds
-        const userTimeKey = `${levelId}-${userId}`;
-        const userTime = this.tableData.times[userTimeKey];
-        const userTimeSeconds = this.timeToSeconds(userTime);
+        const rank = levelTimes.findIndex(entry => entry.userId === userId) + 1;
+        if (!rank) {
+          return '<span class="rank-display"></span>';
+        }
 
         // Initialize result with rank emoji/number
         let result = "";
@@ -846,23 +873,21 @@
             result = "🥉";
             break;
           default:
-            result = rank || "";
+            result = rank.toString();
         }
 
         // Check if time is within 10 seconds of diamond time (for all users)
-        const target = this.targetTimes.find(t => t.level === levelId);
-        if (target && target.diamond_target && userTimeSeconds) {
-          const diamondTimeSeconds = this.timeToSeconds(target.diamond_target);
-          if (diamondTimeSeconds && userTimeSeconds <= diamondTimeSeconds + 10) {
-            result = `<span class="rank-display">${result} 💎</span>`;  // Combine both in one span
-          } else {
-            result = `<span class="rank-display">${result}</span>`;
+        if (Array.isArray(this.targetTimes)) {
+          const target = this.targetTimes.find(t => t.level === levelId);
+          if (target?.diamond_target) {
+            const diamondTimeSeconds = this.timeToSeconds(target.diamond_target);
+            if (diamondTimeSeconds !== null && userEntry.seconds <= diamondTimeSeconds + 10) {
+              return `<span class="rank-display">${result} 💎</span>`;
+            }
           }
-        } else {
-          result = `<span class="rank-display">${result}</span>`;
         }
         
-        return result;
+        return `<span class="rank-display">${result}</span>`;
       },
 
       getTargetTime(levelId, type) {
