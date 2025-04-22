@@ -149,47 +149,45 @@
                 </div>
             </form>
 
-            {% if empty_lines or parse_errors or skipped_users %}
-                <div class="mt-4">
-                    {% if empty_lines %}
-                        <div class="alert alert-info">
-                            <h5 class="mb-3">Empty Lines (Skipped):</h5>
-                            <ul class="mb-0">
-                                {% for line in empty_lines %}
-                                    <li>Line {{ line }}</li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    {% endif %}
+            {% if empty_lines %}
+            <div class="alert alert-warning">
+                Empty lines found on lines: {{ empty_lines|join:", " }}
+            </div>
+            {% endif %}
 
-                    {% if parse_errors %}
-                        <div class="alert alert-danger">
-                            <h5 class="mb-3">Parse Errors:</h5>
-                            <ul class="mb-0">
-                                {% for error in parse_errors %}
-                                    <li>Line {{ error.line }}: {{ error.error }}</li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    {% endif %}
+            {% if skipped_levels %}
+            <div class="alert alert-warning">
+                The following levels were skipped because they don't exist in the selected game: {{ skipped_levels|join:", " }}
+            </div>
+            {% endif %}
 
-                    {% if skipped_users.not_found or skipped_users.not_in_team or skipped_users.inactive %}
-                        <div class="alert alert-warning">
-                            <h5 class="mb-3">Skipped Users:</h5>
-                            <ul class="mb-0">
-                                {% if skipped_users.not_found %}
-                                    <li>Users not found: {{ skipped_users.not_found|join:", " }}</li>
-                                {% endif %}
-                                {% if skipped_users.not_in_team %}
-                                    <li>Users not in team: {{ skipped_users.not_in_team|join:", " }}</li>
-                                {% endif %}
-                                {% if skipped_users.inactive %}
-                                    <li>Inactive users: {{ skipped_users.inactive|join:", " }}</li>
-                                {% endif %}
-                            </ul>
-                        </div>
-                    {% endif %}
-                </div>
+            {% if skipped_users.not_found %}
+            <div class="alert alert-warning">
+                The following users were not found: {{ skipped_users.not_found|join:", " }}
+            </div>
+            {% endif %}
+
+            {% if skipped_users.not_in_team %}
+            <div class="alert alert-warning">
+                The following users are not in the team: {{ skipped_users.not_in_team|join:", " }}
+            </div>
+            {% endif %}
+
+            {% if skipped_users.inactive %}
+            <div class="alert alert-warning">
+                The following users are inactive: {{ skipped_users.inactive|join:", " }}
+            </div>
+            {% endif %}
+
+            {% if parse_errors %}
+            <div class="alert alert-danger">
+                <h5>Errors occurred while processing the file:</h5>
+                <ul>
+                    {% for error in parse_errors %}
+                    <li>Line {{ error.line }}: {{ error.error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
             {% endif %}
             
             <div class="instructions">

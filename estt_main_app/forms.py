@@ -91,6 +91,7 @@ class TargetTimesCreationForm(forms.ModelForm):
         fields = ['level', 'high_target', 'low_target']
 
     def __init__(self, *args, **kwargs):
+        team_id = kwargs.pop('team_id', None)  # Extract team_id from kwargs
         game_id = kwargs.pop('game_id', None)  # Extract game_id from kwargs
         super().__init__(*args, **kwargs)  # Call the parent initializer
         if game_id:

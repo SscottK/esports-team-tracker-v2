@@ -3,11 +3,12 @@
 {% load static %}
 {% block head %}
     <title>ESTT - Create Target Times</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 {% endblock %}  
 {% block content %}
 <div class="container mt-5">
     <div class="row justify-content-center mb-5">
-        <div class="col-md-8 col-lg-6 text-center">
+        <div class="col-12 text-center">
             <h2 class="display-6 text-white">New Target Times</h2>
         </div>
     </div>
@@ -19,13 +20,25 @@
     {% endif %}
 
     <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <!-- Single Target Time Card -->
-            <div class="card bg-dark text-white mb-5">
+        <!-- Single Target Time Card -->
+        <div class="col-md-6 mb-4">
+            <div class="card bg-dark text-white h-100">
                 <div class="card-body p-4">
                     <h4 class="card-title text-center mb-4">Add Single Target Time</h4>
                     <form method="post" class="mt-4">
                         {% csrf_token %}
+                        <input type="hidden" name="form_type" value="single">
+                        <div class="form-group mb-4">
+                            <label for="game">Game</label>
+                            <select name="game" id="game" class="form-control" required>
+                                <option value="">Select a game</option>
+                                {% for team_game in team_games %}
+                                    <option value="{{ team_game.game.id }}" {% if form.game_id.value == team_game.game.id %}selected{% endif %}>
+                                        {{ team_game.game.game }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
                         <div class="form-group mb-4">
                             {{ form.level.label }}
                             {{ form.level|add_class:"form-control" }}
@@ -39,25 +52,39 @@
                             {{ form.low_target|add_class:"form-control" }}
                         </div>
                         <div class="d-flex justify-content-center mt-4">
-                            <button type="submit" class="btn btn-primary px-4">Add Target Times</button>
+                            <button type="submit" name="single_submit" class="btn btn-primary px-4">Add Target Times</button>
                         </div>
                     </form>
                 </div>
             </div>
+        </div>
 
-            <!-- CSV Upload Card -->
-            <div class="card bg-dark text-white mb-4">
+        <!-- CSV Upload Card -->
+        <div class="col-md-6 mb-4">
+            <div class="card bg-dark text-white h-100">
                 <div class="card-body p-4">
                     <h4 class="card-title text-center mb-4">Upload Target Times via CSV</h4>
                     <form method="post" enctype="multipart/form-data" id="csv-upload-form">
                         {% csrf_token %}
+                        <input type="hidden" name="form_type" value="csv">
+                        <div class="form-group mb-4">
+                            <label for="csv_game">Game</label>
+                            <select name="game" id="csv_game" class="form-control" required>
+                                <option value="">Select a game</option>
+                                {% for team_game in team_games %}
+                                    <option value="{{ team_game.game.id }}">
+                                        {{ team_game.game.game }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
                         <div class="form-group mb-4">
                             <label for="csv_file" class="mb-2">CSV File</label>
                             <input type="file" class="form-control mb-2" id="csv_file" name="csv_file" accept=".csv">
                             <small class="form-text text-muted text-center d-block">Format: Level Name, High Target Time, Low Target Time</small>
                         </div>
                         <div class="d-flex justify-content-center mt-4">
-                            <button type="submit" class="btn btn-primary px-4" name="csv_upload">Upload CSV</button>
+                            <button type="submit" name="csv_submit" class="btn btn-primary px-4">Upload CSV</button>
                         </div>
                     </form>
 
@@ -71,6 +98,12 @@
                                             <li>Line {{ line }}</li>
                                         {% endfor %}
                                     </ul>
+                                </div>
+                            {% endif %}
+
+                            {% if skipped_levels %}
+                                <div class="alert alert-warning">
+                                    The following levels were skipped because they don't exist in the selected game: {{ skipped_levels|join:", " }}
                                 </div>
                             {% endif %}
 
@@ -88,12 +121,59 @@
                     {% endif %}
                 </div>
             </div>
+        </div>
+    </div>
 
-            <!-- Single Centered Nevermind Button -->
-            <div class="text-center mt-4">
-                <a href="{% url 'team-details' teamID=team %}" class="btn btn-secondary px-4">Nevermind</a>
-            </div>
+    <!-- Single Centered Nevermind Button -->
+    <div class="row justify-content-center">
+        <div class="col-12 text-center mt-4">
+            <a href="{% url 'team-details' teamID=team.id %}" class="btn btn-secondary px-4">Nevermind</a>
         </div>
     </div>
 </div>
+
+<script>
+$(document).ready(function() {
+    // Function to load levels for a game
+    function loadLevels(gameId) {
+        if (!gameId) {
+            $('#id_level').html('<option value="">Select a game first</option>');
+            return;
+        }
+        
+        $.ajax({
+            url: '/get-levels/',
+            data: {
+                'game_id': gameId
+            },
+            dataType: 'json',
+            success: function(data) {
+                if (data.success) {
+                    var options = '<option value="">Select a level</option>';
+                    data.levels.forEach(function(level) {
+                        options += '<option value="' + level.id + '">' + level.level_name + '</option>';
+                    });
+                    $('#id_level').html(options);
+                } else {
+                    $('#id_level').html('<option value="">Error loading levels</option>');
+                }
+            },
+            error: function() {
+                $('#id_level').html('<option value="">Error loading levels</option>');
+            }
+        });
+    }
+
+    // Handle game selection change
+    $('#game').change(function() {
+        loadLevels($(this).val());
+    });
+
+    // Load levels if a game is already selected
+    var selectedGame = $('#game').val();
+    if (selectedGame) {
+        loadLevels(selectedGame);
+    }
+});
+</script>
 {% endblock %}

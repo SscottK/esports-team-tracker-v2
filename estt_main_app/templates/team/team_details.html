@@ -347,7 +347,7 @@
 
 <title>ESTT - Team Details</title>
 {% endblock %} {% block content %}
-<div class="container-fluid" x-data="teamDetails()" x-init="loadGames({{ team.id }})" data-is-coach="{{ team_user.isCoach|yesno:'true,false' }}">
+<div class="container-fluid" x-data="teamDetails()" x-init="loadGames({{ team.id }})" data-is-coach="{{ team_user.isCoach|lower }}">
   <!-- Side Menu -->
   <div class="side-menu">
     <div class="list-group">
@@ -372,6 +372,38 @@
       >
         Roster
       </button>
+      {% if team_user.isCoach %}
+      <div class="list-group-item list-group-item-action" x-data="{ isOpen: false }">
+        <button 
+          class="w-100 text-start d-flex justify-content-between align-items-center"
+          @click="isOpen = !isOpen"
+          :class="{ active: isOpen }"
+        >
+          CSV Uploaders
+          <i class="fas" :class="isOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+        </button>
+        <div class="submenu" x-show="isOpen" x-transition>
+          <a href="{% url 'upload_times' org_id=org.id team_id=team.id %}" class="list-group-item list-group-item-action submenu-item">
+            Upload Times
+          </a>
+          {% if games %}
+            <a href="{% url 'create-target-times' teamID=team.id %}" class="list-group-item list-group-item-action submenu-item">
+              Upload Target Times
+            </a>
+            <a href="{% url 'upload-diamond-times' teamID=team.id %}" class="list-group-item list-group-item-action submenu-item">
+              Upload Diamond Times
+            </a>
+          {% else %}
+            <div class="list-group-item list-group-item-action submenu-item disabled">
+              Upload Target Times (No games available)
+            </div>
+            <div class="list-group-item list-group-item-action submenu-item disabled">
+              Upload Diamond Times (No games available)
+            </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
     </div>
   </div>
 
@@ -474,30 +506,35 @@
 
                   <!-- Target Times Container -->
                   <div style="margin-left: 10px; padding: 0;">
-                    <!-- Target Times Controls -->
-                    <div class="d-flex align-items-center mb-2" x-show="tableData && tableData.game_id">
+                    <!-- Target Times Header -->
+                    <div class="d-flex align-items-center mb-2">
+                      {% if team_user.isCoach %}
                       <a 
-                        :href="`/team/${tableData.team_id}/game/${tableData.game_id}/target-times/`" 
+                        :href="`/team/${tableData.team_id}/target-times/${tableData.game_id}/`" 
                         class="btn btn-info ms-2"
                         style="white-space: nowrap;"
+                        x-show="tableData && tableData.game_id"
                       >View Target Times</a>
+                      {% else %}
+                      <h5 class="mb-0 ms-2 pt-2" style="margin-top: 5px;">Target Times</h5>
+                      {% endif %}
                     </div>
                     <!-- Target Times Table -->
                     <table class="table table-bordered mb-0">
                       <thead>
                         <tr>
-                          <th style="white-space: nowrap;">High Target</th>
-                          <th style="white-space: nowrap;">Low Target</th>
+                          <th style="width: 70px; padding: 0.5rem 0.25rem; text-align: center;">High Target</th>
+                          <th style="width: 70px; padding: 0.5rem 0.25rem; text-align: center;">Low Target</th>
                         </tr>
                       </thead>
                       <tbody>
                         <template x-for="level in tableData.levels" :key="level.id">
                           <tr>
-                            <td class="target-time-cell">
+                            <td class="target-time-cell" style="padding: 0.5rem 0.25rem;">
                               <span class="target-time-value" x-text="getTargetTime(level.id, 'high_target')"></span>
                               <span class="target-time-placeholder"></span>
                             </td>
-                            <td class="target-time-cell">
+                            <td class="target-time-cell" style="padding: 0.5rem 0.25rem;">
                               <span class="target-time-value" x-text="getTargetTime(level.id, 'low_target')"></span>
                               <span class="target-time-placeholder"></span>
                             </td>

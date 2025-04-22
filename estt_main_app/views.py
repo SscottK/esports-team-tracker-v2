@@ -26,8 +26,9 @@ from django.core.exceptions import ObjectDoesNotExist
 from io import StringIO
 import re
 from django.contrib.admin.views.decorators import staff_member_required
+import logging
 
-
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 
@@ -75,41 +76,46 @@ def signup(request):
 # Team details page
 @login_required
 def team_detail(request, teamID):
-    team = get_object_or_404(Team, id=teamID)    
-    members = Team_user.objects.filter(team=teamID)
-    games = Team_game.objects.filter(team=teamID)
-    user_org = Org_user.objects.filter(user=request.user).first()
-    
-    # Check if user is a member of the team
-    team_user = Team_user.objects.filter(team=teamID, user=request.user).first()
-    if not team_user:
-        messages.error(request, 'You are not a member of this team.')
-        return redirect('dashboard')
-    
-    if user_org:
-        # Check if the team belongs to the user's organization
-        team_in_org = Org_team.objects.filter(team=team, org=user_org.org).exists()
-        if not team_in_org:
-            messages.error(request, 'You can only view teams in your organization.')
+    try:
+        team = get_object_or_404(Team, id=teamID)    
+        members = Team_user.objects.filter(team=teamID)
+        games = Team_game.objects.filter(team=teamID)
+        user_org = Org_user.objects.filter(user=request.user).first()
+        
+        # Check if user is a member of the team
+        team_user = Team_user.objects.filter(team=teamID, user=request.user).first()
+        if not team_user:
+            messages.error(request, 'You are not a member of this team.')
             return redirect('dashboard')
-    else:
-        messages.error(request, 'You must be part of an organization to view team details.')
+        
+        if user_org:
+            # Check if the team belongs to the user's organization
+            team_in_org = Org_team.objects.filter(team=team, org=user_org.org).exists()
+            if not team_in_org:
+                messages.error(request, 'You can only view teams in your organization.')
+                return redirect('org-details')
+        else:
+            messages.error(request, 'You must be part of an organization to view team details.')
+            return redirect('org-details')
+
+        teams = Team.objects.all()
+        active_members = []
+        for member in members:
+            if member.user.is_active:
+                active_members.append(member)
+
+        return render(request, 'team/team_details.html', {
+            'members': active_members,
+            'games': games,
+            'team': team,
+            'team_user': team_user,
+            'teams': teams,
+            'org': user_org.org if user_org else None
+        })
+        
+    except Exception as e:
+        messages.error(request, f'An error occurred: {str(e)}')
         return redirect('dashboard')
-
-    teams = Team.objects.all()
-    active_members = []
-    for member in members:
-        if member.user.is_active:
-            active_members.append(member)
-
-    return render(request, 'team/team_details.html', {
-        'members': active_members,
-        'games': games,
-        'team': team,
-        'team_user': team_user,
-        'teams': teams,
-        'org': user_org.org if user_org else None
-    })
 
 # Add member to team
 @login_required
@@ -674,150 +680,198 @@ def update_time(request, time_id):
 
 #create target times for selected game
 @login_required
-def create_target_times(request, team_id, game_id):
+def create_target_times(request, teamID):
     try:
-        # Get team and game
-        team = get_object_or_404(Team, id=team_id)
-        game = get_object_or_404(Game, id=game_id)
+        logger.info(f"Starting target times creation for team {teamID} by user {request.user.username}")
+        # Get team
+        team = get_object_or_404(Team, id=teamID)
         
-        # Check if user is a team member and coach
-        try:
-            team_user = Team_user.objects.get(team=team, user=request.user)
-            if not team_user.isCoach:
-                messages.error(request, 'Only coaches can set target times.')
-                return redirect('team-details', teamID=team_id)
-        except Team_user.DoesNotExist:
+        # Check if user is a member of the team
+        team_user = Team_user.objects.filter(team=team, user=request.user).first()
+        if not team_user:
+            logger.warning(f"User {request.user.username} attempted to create target times but is not a team member")
             messages.error(request, 'You are not a member of this team.')
-            return redirect('dashboard')
+            return redirect('team-details', teamID=teamID)
             
-        # Get all levels for this game
-        levels = Level.objects.filter(game=game)
+        # Check if user is a coach
+        if not team_user.isCoach:
+            logger.warning(f"User {request.user.username} attempted to create target times but is not a coach")
+            messages.error(request, 'Only coaches can create target times.')
+            return redirect('team-details', teamID=teamID)
         
-        # Initial data for the form
-        initial_data = {}
+        # Get all games for this team
+        team_games = Team_game.objects.filter(team=team).select_related('game')
+        logger.info(f"Retrieved {team_games.count()} games for team {teamID}")
         
         if request.method == 'POST':
-            # Check if this is a CSV upload
-            if 'csv_upload' in request.POST:
-                if 'csv_file' not in request.FILES:
-                    messages.error(request, 'No CSV file uploaded.')
-                    return redirect('create-target-times', team_id=team_id, game_id=game_id)
-                
-                csv_file = request.FILES['csv_file']
-                if not csv_file.name.endswith('.csv'):
-                    messages.error(request, 'Please upload a CSV file.')
-                    return redirect('create-target-times', team_id=team_id, game_id=game_id)
-                
-                upload_errors = []
-                empty_lines = []
-                try:
-                    # Read CSV file
-                    csv_data = csv.reader(csv_file.read().decode('utf-8').splitlines())
-                    next(csv_data)  # Skip header row
+            form_type = request.POST.get('form_type')
+            
+            if form_type == 'single':
+                logger.info(f"Processing single target time creation by {request.user.username}")
+                form = TargetTimesCreationForm(request.POST, team_id=teamID, game_id=request.POST.get('game'))
+                if form.is_valid():
+                    game = form.cleaned_data['game']
+                    level = form.cleaned_data['level']
+                    high_target = form.cleaned_data['high_target']
+                    low_target = form.cleaned_data['low_target']
                     
-                    for row_num, row in enumerate(csv_data, start=2):  # Start from 2 to account for header
-                        # Check for empty lines
+                    logger.info(f"Creating target times for game {game.game}, level {level.level_name}")
+                    logger.info(f"High target: {high_target}, Low target: {low_target}")
+                    
+                    # Create or update target time
+                    target_time, created = Target_times.objects.get_or_create(
+                        level=level,
+                        team=team,
+                        defaults={
+                            'high_target': high_target,
+                            'low_target': low_target
+                        }
+                    )
+                    
+                    if not created:
+                        logger.info(f"Updating existing target times for level {level.level_name}")
+                        target_time.high_target = high_target
+                        target_time.low_target = low_target
+                        target_time.save()
+                    
+                    logger.info("Target times created/updated successfully")
+                    messages.success(request, 'Target times created successfully.')
+                    return redirect('view-target-times', teamID=teamID, game_id=game.id)
+                else:
+                    logger.warning(f"Invalid form submission: {form.errors}")
+                    messages.error(request, 'Please correct the errors below.')
+            
+            elif form_type == 'csv':
+                logger.info(f"Processing CSV upload by {request.user.username}")
+                csv_file = request.FILES.get('csv_file')
+                game_id = request.POST.get('game')
+                
+                if not csv_file:
+                    logger.error("No CSV file was uploaded")
+                    messages.error(request, "No CSV file was uploaded.")
+                    return redirect('create-target-times', teamID=teamID)
+                    
+                if not game_id:
+                    logger.error("No game was selected for target times upload")
+                    messages.error(request, "No game was selected.")
+                    return redirect('create-target-times', teamID=teamID)
+                    
+                try:
+                    game = Game.objects.get(id=game_id)
+                    logger.info(f"Selected game: {game.game}")
+                except Game.DoesNotExist:
+                    logger.error(f"Invalid game ID {game_id} selected for target times upload")
+                    messages.error(request, "Invalid game selected.")
+                    return redirect('create-target-times', teamID=teamID)
+                
+                # Process CSV file
+                try:
+                    logger.info("Starting CSV processing for target times")
+                    csv_reader = csv.reader(csv_file.read().decode('utf-8').splitlines())
+                    empty_lines = []
+                    upload_errors = []
+                    skipped_levels = []  # Track levels that don't exist
+                    
+                    for line_num, row in enumerate(csv_reader, start=1):
                         if not row or all(not cell.strip() for cell in row):
-                            empty_lines.append(row_num)
+                            empty_lines.append(line_num)
                             continue
                             
                         if len(row) < 3:
                             upload_errors.append({
-                                'line': row_num,
-                                'error': 'Invalid format - missing columns'
+                                'line': line_num,
+                                'error': 'Invalid format. Expected: Level Name, High Target Time, Low Target Time'
                             })
                             continue
                             
-                        level_name, high_target, low_target = row[:3]
-                        level_name = level_name.strip()
-                        high_target = high_target.strip()
-                        low_target = low_target.strip()
+                        level_name = row[0].strip()
+                        high_target = row[1].strip()
+                        low_target = row[2].strip()
                         
-                        # Validate time formats
-                        time_pattern = r'^\d{1,2}:\d{2}\.\d{2,3}$|^\d{1,2}:\d{2}\.\d{2}$'
-                        if not re.match(time_pattern, high_target) or not re.match(time_pattern, low_target):
+                        if not level_name or not high_target or not low_target:
                             upload_errors.append({
-                                'line': row_num,
-                                'error': 'Invalid time format'
+                                'line': line_num,
+                                'error': 'Missing required values'
                             })
                             continue
                             
-                        # Normalize time format to MM:SS.mmm
-                        for time in [high_target, low_target]:
-                            if ':' in time:
-                                minutes, rest = time.split(':')
-                                if len(minutes) == 1:
-                                    time = f"0{minutes}:{rest}"
-                                if len(rest.split('.')[1]) == 2:
-                                    time = f"{time}0"
-                        
-                        # Find level
                         try:
-                            level = Level.objects.get(level_name=level_name, game=game)
-                        except Level.DoesNotExist:
+                            # Only use existing levels
+                            try:
+                                level = Level.objects.get(level_name=level_name, game=game)
+                            except Level.DoesNotExist:
+                                skipped_levels.append(level_name)
+                                continue
+                            
+                            # Create or update target times
+                            target_time_obj, created = Target_times.objects.get_or_create(
+                                level=level,
+                                team=team,
+                                defaults={
+                                    'high_target': high_target,
+                                    'low_target': low_target
+                                }
+                            )
+                            
+                            if not created:
+                                target_time_obj.high_target = high_target
+                                target_time_obj.low_target = low_target
+                                target_time_obj.save()
+                                
+                        except Exception as e:
                             upload_errors.append({
-                                'line': row_num,
-                                'error': f"Level '{level_name}' not found"
+                                'line': line_num,
+                                'error': str(e)
                             })
                             continue
-                            
-                        # Create or update target time
-                        target_time, created = Target_times.objects.get_or_create(
-                            level=level,
-                            team=team,
-                            defaults={
-                                'high_target': high_target,
-                                'low_target': low_target
-                            }
-                        )
-                        
-                        if not created:
-                            target_time.high_target = high_target
-                            target_time.low_target = low_target
-                            target_time.save()
-                            
+                    
+                    if upload_errors or empty_lines or skipped_levels:
+                        logger.warning(f"CSV processing completed with {len(upload_errors)} errors, {len(empty_lines)} empty lines, and {len(skipped_levels)} skipped levels")
+                        return render(request, 'target_time/add_tt.html', {
+                            'team': team,
+                            'team_games': team_games,
+                            'upload_errors': upload_errors,
+                            'empty_lines': empty_lines,
+                            'skipped_levels': skipped_levels
+                        })
+                    
+                    logger.info("CSV processing completed successfully")
+                    messages.success(request, "Target times uploaded successfully.")
+                    return redirect('view-target-times', teamID=teamID, game_id=game_id)
+                    
                 except Exception as e:
-                    upload_errors.append({
-                        'line': 'N/A',
-                        'error': f"Error processing CSV: {str(e)}"
-                    })
-                
-                if upload_errors or empty_lines:
-                    form = TargetTimesCreationForm(initial=initial_data, game_id=game_id)
-                    form.fields['level'].queryset = levels
-                    return render(request, 'target_time/add_tt.html', {
-                        'form': form,
-                        'game': game,
-                        'team': team.id,
-                        'upload_errors': upload_errors,
-                        'empty_lines': empty_lines
-                    })
-                
-                messages.success(request, 'Target times uploaded successfully.')
-                return redirect('team-details', teamID=team_id)
-                
-            else:
-                # Handle single target time form submission
-                form = TargetTimesCreationForm(request.POST, game_id=game_id)
-                if form.is_valid():
-                    target_time = form.save(commit=False)
-                    target_time.team = team
-                    target_time.save()
-                    messages.success(request, 'Target time added successfully.')
-                    return redirect('team-details', teamID=team_id)
-        else:
-            form = TargetTimesCreationForm(initial=initial_data, game_id=game_id)
-            form.fields['level'].queryset = levels
+                    logger.error(f"Error processing CSV file: {str(e)}", exc_info=True)
+                    messages.error(request, f"Error processing CSV file: {str(e)}")
+                    return redirect('create-target-times', teamID=teamID)
             
+            else:
+                logger.warning("Invalid form type submitted")
+                messages.error(request, 'Invalid form submission.')
+                return redirect('create-target-times', teamID=teamID)
+        
+        # Initialize form with team_id and game_id from GET parameters
+        game_id = request.GET.get('game_id')
+        form = TargetTimesCreationForm(team_id=teamID, game_id=game_id)
+        
         return render(request, 'target_time/add_tt.html', {
             'form': form,
-            'game': game,
-            'team': team.id
+            'team': team,
+            'team_games': team_games
         })
         
+    except Team.DoesNotExist:
+        logger.error(f"Team {teamID} not found for target times creation")
+        messages.error(request, 'Team not found.')
+        return redirect('dashboard')
     except Exception as e:
+        logger.error(f"Unexpected error in create_target_times: {str(e)}", exc_info=True)
         messages.error(request, f'An error occurred: {str(e)}')
-        return redirect('team-details', teamID=team_id)
+        return render(request, 'target_time/add_tt.html', {
+            'form': TargetTimesCreationForm(team_id=teamID),
+            'team': team,
+            'team_games': team_games,
+            'error_message': str(e)
+        })
 
 # Get all games for new time
 @login_required
@@ -1461,7 +1515,8 @@ def upload_times(request, org_id, team_id):
                     'not_in_team': [],
                     'inactive': []
                 }
-                
+                skipped_levels = []  # Track levels that don't exist
+
                 # Process each level's times
                 for level_name, user_times in times_data.items():
                     # Sanitize level name
@@ -1469,11 +1524,12 @@ def upload_times(request, org_id, team_id):
                     if not level_name:
                         continue
                         
-                    # Get or create the level
-                    level, created = Level.objects.get_or_create(
-                        level_name=level_name,
-                        game=game
-                    )
+                    # Only use existing levels
+                    try:
+                        level = Level.objects.get(level_name=level_name, game=game)
+                    except Level.DoesNotExist:
+                        skipped_levels.append(level_name)
+                        continue
                     
                     # Process each user's time
                     for username, time in user_times.items():
@@ -1514,10 +1570,11 @@ def upload_times(request, org_id, team_id):
                     'org_id': org_id,
                     'empty_lines': empty_lines,
                     'parse_errors': parse_errors,
-                    'skipped_users': skipped_users
+                    'skipped_users': skipped_users,
+                    'skipped_levels': skipped_levels
                 }
                 
-                if empty_lines or parse_errors or any(skipped_users.values()):
+                if empty_lines or parse_errors or any(skipped_users.values()) or skipped_levels:
                     return render(request, 'time/upload_times.html', context)
                 
                 messages.success(request, 'Times have been successfully uploaded and processed.')
@@ -1680,89 +1737,108 @@ def manage_game_suggestions(request):
     })
 
 @login_required
-def view_target_times(request, team_id, game_id):
+def view_target_times(request, teamID, game_id=None):
     try:
-        # Get team and game
-        team = get_object_or_404(Team, id=team_id)
-        game = get_object_or_404(Game, id=game_id)
+        logger.info(f"Starting view_target_times for team {teamID}, game {game_id} by user {request.user.username}")
+        
+        # Get team
+        team = get_object_or_404(Team, id=teamID)
+        logger.info(f"Found team: {team.name}")
         
         # Check if user is a team member
         try:
             team_user = Team_user.objects.get(team=team, user=request.user)
+            logger.info(f"User {request.user.username} is a member of team {team.name}")
         except Team_user.DoesNotExist:
+            logger.warning(f"User {request.user.username} attempted to view target times but is not a member of team {team.name}")
             messages.error(request, 'You are not a member of this team.')
             return redirect('dashboard')
-        
-        # Get all levels for this game
-        all_levels = Level.objects.filter(game=game).order_by('level_name')
-        print(f"Found {all_levels.count()} levels for game {game.game}")
-        
-        # Get target times for this team and game
-        target_times = Target_times.objects.filter(
-            team=team,
-            level__game=game
-        ).select_related('level')
-        print(f"Found {target_times.count()} target times")
-        
-        # Only get diamond times if user is a coach
-        diamond_times = []
-        if team_user.isCoach:
-            diamond_times = Diamond_times.objects.filter(
-                team=team,
-                level__game=game
-            ).select_related('level')
-            print(f"Found {len(diamond_times)} diamond times")
-        
-        # Create a list of all levels with their target times and diamond times
-        level_times = []
-        for level in all_levels:
-            # Get target time for this level
-            target_time = target_times.filter(level=level).first()
             
-            # Get diamond time for this level (only for coaches)
-            diamond_time = None
-            if team_user.isCoach:
-                diamond_time = next((dt for dt in diamond_times if dt.level_id == level.id), None)
+        # Get all games for this team
+        team_games = Team_game.objects.filter(team=team).select_related('game')
+        logger.info(f"Found {team_games.count()} games for team {team.name}")
+        
+        # If no game_id provided, use the first game
+        if not game_id and team_games.exists():
+            first_game = team_games.first().game
+            logger.info(f"No game_id provided, redirecting to first game: {first_game.game}")
+            return redirect('view-target-times', teamID=teamID, game_id=first_game.id)
+        elif not game_id:
+            logger.warning(f"No game_id provided and no games exist for team {team.name}")
+            messages.error(request, 'No games available for this team.')
+            return redirect('team-details', teamID=teamID)
             
-            level_times.append({
-                'level': level,
-                'high_target': target_time.high_target if target_time else '-',
-                'low_target': target_time.low_target if target_time else '-',
-                'diamond_target': diamond_time.diamond_target if diamond_time else '-' if team_user.isCoach else None
-            })
+        # Get the selected game
+        try:
+            game = Game.objects.get(id=game_id)
+            team_game = Team_game.objects.get(team=team, game=game)
+            logger.info(f"Found selected game: {game.game}")
+        except Game.DoesNotExist:
+            logger.error(f"Invalid game_id {game_id} selected for team {team.name}")
+            messages.error(request, 'Invalid game selected.')
+            if team_games.exists():
+                first_game = team_games.first().game
+                logger.info(f"Redirecting to first available game: {first_game.game}")
+                return redirect('view-target-times', teamID=teamID, game_id=first_game.id)
+            return redirect('team-details', teamID=teamID)
+        except Team_game.DoesNotExist:
+            logger.error(f"Game {game_id} exists but is not associated with team {team.name}")
+            messages.error(request, 'This game is not available for your team.')
+            if team_games.exists():
+                first_game = team_games.first().game
+                logger.info(f"Redirecting to first available game: {first_game.game}")
+                return redirect('view-target-times', teamID=teamID, game_id=first_game.id)
+            return redirect('team-details', teamID=teamID)
+            
+        # Get all levels for the game
+        levels = Level.objects.filter(game=game).order_by('level_name')
+        logger.info(f"Found {levels.count()} levels for game {game.game}")
         
-        print(f"Created {len(level_times)} level times entries")
-        
+        # Get target times for each level
+        target_times = {}
+        diamond_times = {}
+        for level in levels:
+            try:
+                target_time = Target_times.objects.get(team=team, level=level)
+                target_times[level.id] = {
+                    'high_target': target_time.high_target,
+                    'low_target': target_time.low_target
+                }
+            except Target_times.DoesNotExist:
+                target_times[level.id] = {
+                    'high_target': None,
+                    'low_target': None
+                }
+                
+            try:
+                diamond_time = Diamond_times.objects.get(team=team, level=level)
+                diamond_times[level.id] = diamond_time.diamond_target
+            except Diamond_times.DoesNotExist:
+                diamond_times[level.id] = None
+                
         context = {
             'team': team,
             'game': game,
-            'target_times': level_times,
+            'team_games': team_games,
+            'levels': levels,
+            'target_times': target_times,
+            'diamond_times': diamond_times,
             'is_coach': team_user.isCoach
         }
         
-        return render(request, 'target_time/view_tt.html', context)
+        logger.info(f"Rendering view_target_times template for team {team.name}, game {game.game}")
+        return render(request, 'target_time/view_target_times.html', context)
         
     except Exception as e:
-        print(f"Error in view_target_times: {str(e)}")
-        # Only redirect for critical errors
-        if isinstance(e, (Team.DoesNotExist, Game.DoesNotExist)):
-            messages.error(request, f'An error occurred: {str(e)}')
-            return redirect('team-details', teamID=team_id)
-        else:
-            # For non-critical errors, show the page with an error message
-            messages.error(request, f'An error occurred: {str(e)}')
-            return render(request, 'target_time/view_tt.html', {
-                'team': team,
-                'game': game,
-                'target_times': [],
-                'error': str(e)
-            })
+        logger.error(f"Unexpected error in view_target_times: {str(e)}", exc_info=True)
+        messages.error(request, f'An error occurred: {str(e)}')
+        return redirect('team-details', teamID=teamID)
 
 @login_required
-def get_target_times(request, team_id, game_id):
+def get_target_times(request, teamID, game_id):
     try:
         # Verify team membership
-        team = get_object_or_404(Team, id=team_id)
+        team = get_object_or_404(Team, id=teamID)
         try:
             team_user = Team_user.objects.get(team=team, user=request.user)
         except Team_user.DoesNotExist:
@@ -1902,128 +1978,151 @@ def get_compare_data(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 @login_required
-def upload_diamond_times(request, team_id, game_id):
+def upload_diamond_times(request, teamID):
     try:
-        # Get team and game
-        team = get_object_or_404(Team, id=team_id)
-        game = get_object_or_404(Game, id=game_id)
+        logger.info(f"Starting diamond times upload for team {teamID} by user {request.user.username}")
+        team = Team.objects.get(id=teamID)
         
-        # Check if user is a team member and coach
-        try:
-            team_user = Team_user.objects.get(team=team, user=request.user)
-            if not team_user.isCoach:
-                messages.error(request, 'Only coaches can upload diamond times.')
-                return redirect('view-target-times', team_id=team_id, game_id=game_id)
-        except Team_user.DoesNotExist:
-            messages.error(request, 'You are not a member of this team.')
+        # Check if user is a member of the team
+        team_user = Team_user.objects.filter(team=team, user=request.user).first()
+        if not team_user:
+            logger.warning(f"User {request.user.username} attempted to upload diamond times but is not a team member")
+            messages.error(request, "You are not a member of this team.")
             return redirect('dashboard')
-
+            
+        if not team_user.isCoach:
+            logger.warning(f"User {request.user.username} attempted to upload diamond times but is not a coach")
+            messages.error(request, "Only coaches can upload diamond times.")
+            return redirect('view-target-times', team_id=teamID)
+            
         if request.method == 'POST':
-            if 'csv_file' not in request.FILES:
-                messages.error(request, 'No CSV file uploaded.')
-                return redirect('upload-diamond-times', team_id=team_id, game_id=game_id)
-            
-            csv_file = request.FILES['csv_file']
-            if not csv_file.name.endswith('.csv'):
-                messages.error(request, 'Please upload a CSV file.')
-                return redirect('upload-diamond-times', team_id=team_id, game_id=game_id)
-            
-            upload_errors = []
-            empty_lines = []
-            try:
-                # Read CSV file
-                csv_data = csv.reader(csv_file.read().decode('utf-8').splitlines())
-                next(csv_data)  # Skip header row
+            logger.info(f"Processing POST request for diamond times upload by {request.user.username}")
+            csv_file = request.FILES.get('csv_file')
+            if not csv_file:
+                logger.error("No CSV file was uploaded")
+                messages.error(request, "No CSV file was uploaded.")
+                return redirect('upload-diamond-times', teamID=teamID)
                 
-                for row_num, row in enumerate(csv_data, start=2):  # Start from 2 to account for header
-                    # Check for empty lines
+            game_id = request.POST.get('game')
+            if not game_id:
+                logger.error("No game was selected for diamond times upload")
+                messages.error(request, "No game was selected.")
+                return redirect('upload-diamond-times', teamID=teamID)
+                
+            try:
+                game = Game.objects.get(id=game_id)
+                logger.info(f"Selected game: {game.game}")
+            except Game.DoesNotExist:
+                logger.error(f"Invalid game ID {game_id} selected for diamond times upload")
+                messages.error(request, "Invalid game selected.")
+                return redirect('upload-diamond-times', teamID=teamID)
+                
+            # Process CSV file
+            try:
+                logger.info("Starting CSV processing for diamond times")
+                csv_reader = csv.reader(csv_file.read().decode('utf-8').splitlines())
+                empty_lines = []
+                upload_errors = []
+                skipped_levels = []  # Track levels that don't exist
+                
+                for line_num, row in enumerate(csv_reader, start=1):
                     if not row or all(not cell.strip() for cell in row):
-                        empty_lines.append(row_num)
+                        empty_lines.append(line_num)
                         continue
                         
                     if len(row) < 2:
                         upload_errors.append({
-                            'line': row_num,
-                            'error': 'Invalid format - missing columns'
+                            'line': line_num,
+                            'error': 'Invalid format. Expected: Level Name, Diamond Time (MM:SS.mmm)'
                         })
                         continue
                         
-                    level_name, diamond_time = row[:2]
-                    level_name = level_name.strip()
-                    diamond_time = diamond_time.strip()
+                    level_name = row[0].strip()
+                    diamond_time = row[1].strip()
                     
-                    # Validate time format
-                    time_pattern = r'^\d{1,2}:\d{2}\.\d{2,3}$|^\d{1,2}:\d{2}\.\d{2}$'
-                    if not re.match(time_pattern, diamond_time):
+                    if not level_name or not diamond_time:
                         upload_errors.append({
-                            'line': row_num,
-                            'error': 'Invalid time format'
+                            'line': line_num,
+                            'error': 'Missing required values'
                         })
                         continue
                         
-                    # Normalize time format to MM:SS.mmm
-                    if ':' in diamond_time:
-                        minutes, rest = diamond_time.split(':')
-                        if len(minutes) == 1:
-                            diamond_time = f"0{minutes}:{rest}"
-                        if len(rest.split('.')[1]) == 2:
-                            diamond_time = f"{diamond_time}0"
-                    
-                    # Find level
                     try:
-                        level = Level.objects.get(level_name=level_name, game=game)
-                    except Level.DoesNotExist:
+                        # Only use existing levels
+                        try:
+                            level = Level.objects.get(level_name=level_name, game=game)
+                        except Level.DoesNotExist:
+                            skipped_levels.append(level_name)
+                            continue
+                        
+                        # Create or update diamond time
+                        diamond_time_obj, created = Diamond_times.objects.get_or_create(
+                            level=level,
+                            team=team,
+                            defaults={
+                                'diamond_target': diamond_time
+                            }
+                        )
+                        
+                        if not created:
+                            logger.info(f"Updating existing diamond time for level {level.level_name}")
+                            diamond_time_obj.diamond_target = diamond_time
+                            diamond_time_obj.save()
+                            
+                    except Exception as e:
                         upload_errors.append({
-                            'line': row_num,
-                            'error': f"Level '{level_name}' not found"
+                            'line': line_num,
+                            'error': str(e)
                         })
                         continue
-                        
-                    # Create or update diamond time
-                    Diamond_times.objects.update_or_create(
-                        level=level,
-                        team=team,
-                        defaults={'diamond_target': diamond_time}
-                    )
-                    
+                
+                if upload_errors or empty_lines or skipped_levels:
+                    logger.warning(f"CSV processing completed with {len(upload_errors)} errors, {len(empty_lines)} empty lines, and {len(skipped_levels)} skipped levels")
+                    return render(request, 'target_time/upload_diamond_times.html', {
+                        'team': team,
+                        'team_games': Team_game.objects.filter(team=team).select_related('game'),
+                        'upload_errors': upload_errors,
+                        'empty_lines': empty_lines,
+                        'skipped_levels': skipped_levels
+                    })
+                
+                logger.info("CSV processing completed successfully")
+                messages.success(request, "Diamond times uploaded successfully.")
+                return redirect('view-target-times', teamID=teamID, game_id=game_id)
+                
             except Exception as e:
-                upload_errors.append({
-                    'line': 'N/A',
-                    'error': f"Error processing CSV: {str(e)}"
-                })
-            
-            context = {
-                'team': team,
-                'game': game,
-                'upload_errors': upload_errors,
-                'empty_lines': empty_lines
-            }
-            
-            if upload_errors or empty_lines:
-                return render(request, 'target_time/upload_diamond_times.html', context)
-            
-            messages.success(request, 'Diamond times uploaded successfully.')
-            return redirect('view-target-times', team_id=team_id, game_id=game_id)
-            
-        return render(request, 'target_time/upload_diamond_times.html', {
-            'team': team,
-            'game': game
-        })
+                logger.error(f"Error processing CSV file: {str(e)}", exc_info=True)
+                messages.error(request, f"Error processing CSV file: {str(e)}")
+                return redirect('upload-diamond-times', teamID=teamID)
+                
+        # Get all games for the team
+        team_games = Team_game.objects.filter(team=team).select_related('game')
+        logger.info(f"Retrieved {team_games.count()} games for team {teamID}")
         
+        context = {
+            'team': team,
+            'team_games': team_games,
+        }
+        return render(request, 'target_time/upload_diamond_times.html', context)
+    except Team.DoesNotExist:
+        logger.error(f"Team {teamID} not found for diamond times upload")
+        messages.error(request, "Team not found.")
+        return redirect('dashboard')
     except Exception as e:
-        messages.error(request, f'An error occurred: {str(e)}')
-        return redirect('view-target-times', team_id=team_id, game_id=game_id)
+        logger.error(f"Unexpected error in upload_diamond_times: {str(e)}", exc_info=True)
+        messages.error(request, f"An error occurred: {str(e)}")
+        return redirect('dashboard')
 
 @login_required
-def delete_target_times(request, team_id, game_id, level_id):
+def delete_target_times(request, teamID, game_id, level_id):
     try:
         # Get team and verify user is a coach
-        team = get_object_or_404(Team, id=team_id)
+        team = get_object_or_404(Team, id=teamID)
         team_user = get_object_or_404(Team_user, team=team, user=request.user)
         
         if not team_user.isCoach:
             messages.error(request, 'Only coaches can delete target times.')
-            return redirect('view-target-times', team_id=team_id, game_id=game_id)
+            return redirect('view-target-times', teamID=teamID, game_id=game_id)
             
         # Delete the target times
         target_time = get_object_or_404(Target_times, team=team, level_id=level_id)
@@ -2034,18 +2133,18 @@ def delete_target_times(request, team_id, game_id, level_id):
     except Exception as e:
         messages.error(request, f'Error deleting target times: {str(e)}')
         
-    return redirect('view-target-times', team_id=team_id, game_id=game_id)
+    return redirect('view-target-times', teamID=teamID, game_id=game_id)
 
 @login_required
-def delete_diamond_times(request, team_id, game_id, level_id):
+def delete_diamond_times(request, teamID, game_id, level_id):
     try:
         # Get team and verify user is a coach
-        team = get_object_or_404(Team, id=team_id)
+        team = get_object_or_404(Team, id=teamID)
         team_user = get_object_or_404(Team_user, team=team, user=request.user)
         
         if not team_user.isCoach:
             messages.error(request, 'Only coaches can delete diamond times.')
-            return redirect('view-target-times', team_id=team_id, game_id=game_id)
+            return redirect('view-target-times', teamID=teamID, game_id=game_id)
             
         # Delete the diamond time
         diamond_time = get_object_or_404(Diamond_times, team=team, level_id=level_id)
@@ -2056,7 +2155,7 @@ def delete_diamond_times(request, team_id, game_id, level_id):
     except Exception as e:
         messages.error(request, f'Error deleting diamond time: {str(e)}')
         
-    return redirect('view-target-times', team_id=team_id, game_id=game_id)
+    return redirect('view-target-times', teamID=teamID, game_id=game_id)
 
 @login_required
 def org_details(request):
