@@ -410,24 +410,31 @@ def get_table_data(request):
     try:
         # Validate game_id parameter
         game_id = request.GET.get('game_id')
-        if not game_id:
-            return JsonResponse({"error": "Game ID is required"}, status=400)
+        team_id = request.GET.get('team_id')  # Add team_id parameter
+        
+        if not game_id or not team_id:
+            return JsonResponse({"error": "Game ID and Team ID are required"}, status=400)
             
         try:
             game_id = int(game_id)
+            team_id = int(team_id)
         except (TypeError, ValueError):
-            return JsonResponse({"error": "Invalid game ID format"}, status=400)
+            return JsonResponse({"error": "Invalid game ID or team ID format"}, status=400)
         
         # Get team game and game with error handling
         try:
-            team_game = get_object_or_404(Team_game, game=game_id)
+            # Get the team game for this specific game and team
+            team_game = Team_game.objects.filter(game=game_id, team=team_id).first()
+            if not team_game:
+                return JsonResponse({"error": "Game not found for this team"}, status=404)
+                
             game = get_object_or_404(Game, id=game_id)
-        except (Team_game.DoesNotExist, Game.DoesNotExist):
+        except Game.DoesNotExist:
             return JsonResponse({"error": "Game not found"}, status=404)
             
         # Get team members
         team_members = Team_user.objects.filter(
-            team_id=team_game.team.id,
+            team_id=team_id,  # Use the team_id parameter
             isCoach=False  # Only get non-coach members
         ).select_related('user')
         if not team_members.exists():
@@ -465,11 +472,10 @@ def get_table_data(request):
             'times': time_dict,
             'game': str(game),
             'game_id': game_id,
-            'team_id': team_game.team.id
+            'team_id': team_id
         }
         
         return JsonResponse(response_data)
-        
     except Exception as e:
         return JsonResponse({"error": f"An unexpected error occurred: {str(e)}"}, status=500)
 

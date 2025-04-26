@@ -807,7 +807,7 @@
         }
         try {
           console.log('Loading table data for game:', gameId);
-          const response = await fetch(`/api/table-data/?game_id=${gameId}`);
+          const response = await fetch(`/api/table-data/?game_id=${gameId}&team_id={{ team.id }}`);
           if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.error || "Failed to fetch table data.");
